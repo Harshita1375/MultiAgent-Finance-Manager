@@ -1,36 +1,32 @@
 import React, { useState } from 'react';
 import { FaSave } from 'react-icons/fa';
-import './Profile.css'; // We will create this next
+import './Profile.css'; 
+import axios from 'axios';
 
 const Profile = () => {
+    const API_URL = process.env.REACT_APP_API_URL
     const [formData, setFormData] = useState({
-        // 1. Earnings
         netEarnings: '',
         
-        // 2. Expenses
         emi: '',
         rent: '',
         grocery: '',
         electricity: '',
-        otherBills: '', // Mobile/TV
-        subscriptions: '', // OTT
+        otherBills: '', 
+        subscriptions: '', 
         petrol: '',
         otherExpense: '',
 
-        // 3. Demographics
         maritalStatus: 'single',
         hasChildren: 'no',
         schoolFees: '',
 
-        // 4. Lifestyle
         partyBudget: '',
 
-        // 5. Savings (Investments)
         sip: '',
         fdRd: '',
         gold: '',
 
-        // 6. Other
         notes: ''
     });
 
@@ -39,11 +35,55 @@ const Profile = () => {
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Profile Data to Save:", formData);
-        // Later: axios.post(`${API_URL}/api/profile`, formData, config);
-        alert("Profile data prepared! (Backend integration coming next)");
+        
+        try {
+            const token = localStorage.getItem('token');
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-auth-token': token
+                }
+            };
+
+            const payload = {
+                netEarnings: formData.netEarnings,
+                expenses: {
+                    emi: formData.emi,
+                    rent: formData.rent,
+                    grocery: formData.grocery,
+                    electricity: formData.electricity,
+                    otherBills: formData.otherBills,
+                    subscriptions: formData.subscriptions,
+                    petrol: formData.petrol,
+                    otherExpense: formData.otherExpense
+                },
+                demographics: {
+                    maritalStatus: formData.maritalStatus,
+                    hasChildren: formData.hasChildren,
+                    schoolFees: formData.schoolFees
+                },
+                lifestyle: {
+                    partyBudget: formData.partyBudget
+                },
+                savings: {
+                    sip: formData.sip,
+                    fdRd: formData.fdRd,
+                    gold: formData.gold
+                },
+                notes: formData.notes
+            };
+
+            const res = await axios.post(`${API_URL}/api/profile`, payload, config);
+            
+            alert("✅ Profile Saved Successfully!");
+            console.log("Saved Data:", res.data);
+
+        } catch (err) {
+            console.error(err);
+            alert("❌ Error saving profile. Please try again.");
+        }
     };
 
     return (
