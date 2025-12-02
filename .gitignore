@@ -1,0 +1,18 @@
+# Dependency directories
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment variables (NEVER upload these!)
+.env
+.env.local
+.env.production
+server/.env
+client/.env
+
+# Build outputs
+build/
+dist/
+
+# System files
+.DS_Store
