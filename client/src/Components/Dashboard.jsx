@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import axios from 'axios';
 import { 
-    FaHome, FaUser, FaRobot, FaWallet, FaPiggyBank, FaBell, FaBars, FaSignOutAlt, FaChartLine 
+    FaHome, FaUser, FaRobot, FaWallet, FaPiggyBank, FaBell, FaBars, FaSignOutAlt, FaUserCircle 
 } from 'react-icons/fa';
 import './Dashboard.css'; 
-import Profile from './Profile';    
+import Profile from './Profile';
 import Analytics from './Analytics';
 
 const Dashboard = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     
-    const [user, setUser] = useState({ name: 'User' });
+    const [user, setUser] = useState({ name: 'Guest' });
     const [activeTab, setActiveTab] = useState('overview'); 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
     useEffect(() => {
         const googleToken = searchParams.get('token');
@@ -26,9 +29,22 @@ const Dashboard = () => {
         if (!token) {
             navigate('/'); 
         } else {
-
+            fetchUserProfile(token);
         }
     }, [searchParams, navigate]);
+
+    const fetchUserProfile = async (token) => {
+        try {
+            const res = await axios.get(`${API_URL}/api/auth/user`, {
+                headers: { 'x-auth-token': token }
+            });
+            if (res.data) {
+                setUser({ name: res.data.username });
+            }
+        } catch (err) {
+            console.error("Error fetching user:", err);
+        }
+    };
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -47,7 +63,6 @@ const Dashboard = () => {
                     <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => setActiveTab('overview')}>
                         <FaHome /> <span>Overview</span>
                     </button>
-                    
                     <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}>
                         <FaUser /> <span>Profile & History</span>
                     </button>
@@ -76,47 +91,63 @@ const Dashboard = () => {
             </div>
 
             <div className="main-content-wrapper">
+                <div className="top-bar">
+                    <h2 className="page-title">
+                        {activeTab === 'overview' && 'Dashboard Overview'}
+                        {activeTab === 'profile' && 'Profile Settings'}
+                        {activeTab === 'advisory' && 'AI Advisor'}
+                        {activeTab === 'expense' && 'Expense Agent'}
+                        {activeTab === 'savings' && 'Savings Agent'}
+                        {activeTab === 'notifications' && 'Notifications'}
+                    </h2>
 
-                {activeTab === 'overview' && (
-                    <div className="view-content">
-                        <Analytics userName={user.name} />
+                    <div className="user-info">
+                        <span className="user-name">Hi, <strong>{user.name}</strong></span>
+                        <FaUserCircle className="user-avatar" />
                     </div>
-                )}
+                </div>
 
-                {activeTab === 'profile' && (
-                    <div className="view-content">
-                       
-                        <Profile userName={user.name} />
-                    </div>
-                )}
-                
-                {activeTab === 'advisory' && (
-                    <div className="view-content">
-                        <h2>🤵 Advisory Agent</h2>
-                        <p>I will analyze your Profile data and give advice soon.</p>
-                    </div>
-                )}
-                
-                {activeTab === 'expense' && (
-                    <div className="view-content">
-                        <h2>💸 Expense Agent</h2>
-                        <p>Tracking expenses...</p>
-                    </div>
-                )}
+                <div className="content-area">
+                    {activeTab === 'overview' && (
+                        <div className="view-content">
+                            <Analytics userName={user.name} /> 
+                        </div>
+                    )}
 
-                {activeTab === 'savings' && (
-                    <div className="view-content">
-                        <h2>🐷 Savings Agent</h2>
-                        <p>Calculating compound interest...</p>
-                    </div>
-                )}
+                    {activeTab === 'profile' && (
+                        <div className="view-content">
+                            <Profile userName={user.name} /> 
+                        </div>
+                    )}
+                    
+                    {activeTab === 'advisory' && (
+                        <div className="view-content">
+                            <h2>🤵 Advisory Agent</h2>
+                            <p>I will analyze your Profile data and give advice soon.</p>
+                        </div>
+                    )}
+                    
+                    {activeTab === 'expense' && (
+                        <div className="view-content">
+                            <h2>💸 Expense Agent</h2>
+                            <p>Tracking expenses...</p>
+                        </div>
+                    )}
 
-                {activeTab === 'notifications' && (
-                    <div className="view-content">
-                        <h2>🔔 Notifications</h2>
-                        <p>No new alerts.</p>
-                    </div>
-                )}
+                    {activeTab === 'savings' && (
+                        <div className="view-content">
+                            <h2>🐷 Savings Agent</h2>
+                            <p>Calculating compound interest...</p>
+                        </div>
+                    )}
+
+                    {activeTab === 'notifications' && (
+                        <div className="view-content">
+                            <h2>🔔 Notifications</h2>
+                            <p>No new alerts.</p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
