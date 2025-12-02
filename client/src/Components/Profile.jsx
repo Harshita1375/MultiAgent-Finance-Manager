@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
-import { FaSave } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react'; 
+import { FaSave, FaCalendarAlt } from 'react-icons/fa'; 
 import './Profile.css'; 
 import axios from 'axios';
 
 const Profile = () => {
-    const API_URL = process.env.REACT_APP_API_URL
+    const API_URL = process.env.REACT_APP_API_URL;
+    
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+
     const [formData, setFormData] = useState({
         netEarnings: '',
         
@@ -30,6 +34,52 @@ const Profile = () => {
         notes: ''
     });
 
+    useEffect(() => {
+        const fetchData = async () => {
+            const token = localStorage.getItem('token');
+            try {
+                const res = await axios.get(`${API_URL}/api/records?month=${selectedMonth}`, {
+                    headers: { 'x-auth-token': token }
+                });
+                
+                if (res.data && res.data.month) {
+                    const d = res.data;
+                    setFormData({
+                        netEarnings: d.income || '', 
+                        emi: d.expenses?.emi || '',
+                        rent: d.expenses?.rent || '',
+                        grocery: d.expenses?.grocery || '',
+                        electricity: d.expenses?.electricity || '',
+                        otherBills: d.expenses?.otherBills || '',
+                        subscriptions: d.expenses?.subscriptions || '',
+                        petrol: d.expenses?.petrol || '',
+                        otherExpense: d.expenses?.otherExpense || '',
+                        maritalStatus: formData.maritalStatus, 
+                        hasChildren: formData.hasChildren,
+                        schoolFees: d.expenses?.schoolFees || '', 
+
+                        partyBudget: d.expenses?.partyBudget || '',
+
+                        sip: d.savings?.sip || '',
+                        fdRd: d.savings?.fdRd || '',
+                        gold: d.savings?.gold || '',
+                        notes: d.notes || ''
+                    });
+                } else {
+                    setFormData(prev => ({ 
+                        ...prev, 
+                        netEarnings: '', emi: '', rent: '', grocery: '', electricity: '', 
+                        otherBills: '', subscriptions: '', petrol: '', otherExpense: '', 
+                        sip: '', fdRd: '', gold: '', notes: '' 
+                    }));
+                }
+            } catch (err) { 
+                console.error("Error fetching record:", err); 
+            }
+        };
+        fetchData();
+    }, [selectedMonth, API_URL]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
@@ -48,7 +98,8 @@ const Profile = () => {
             };
 
             const payload = {
-                netEarnings: formData.netEarnings,
+                month: selectedMonth,
+                income: formData.netEarnings,
                 expenses: {
                     emi: formData.emi,
                     rent: formData.rent,
@@ -59,14 +110,6 @@ const Profile = () => {
                     petrol: formData.petrol,
                     otherExpense: formData.otherExpense
                 },
-                demographics: {
-                    maritalStatus: formData.maritalStatus,
-                    hasChildren: formData.hasChildren,
-                    schoolFees: formData.schoolFees
-                },
-                lifestyle: {
-                    partyBudget: formData.partyBudget
-                },
                 savings: {
                     sip: formData.sip,
                     fdRd: formData.fdRd,
@@ -75,9 +118,9 @@ const Profile = () => {
                 notes: formData.notes
             };
 
-            const res = await axios.post(`${API_URL}/api/profile`, payload, config);
+            const res = await axios.post(`${API_URL}/api/records`, payload, config);
             
-            alert("✅ Profile Saved Successfully!");
+            alert(`✅ Record saved for ${selectedMonth}!`);
             console.log("Saved Data:", res.data);
 
         } catch (err) {
@@ -89,17 +132,26 @@ const Profile = () => {
     return (
         <div className="profile-container">
             <div className="profile-header">
-                <h2>👤 Financial Profile</h2>
-                <p>Complete this to help your AI Agents calculate your Safe-to-Spend limit.</p>
+                <h2>👤 Monthly Financial Tracker</h2>
+                <p>Track your income and expenses for specific months.</p>
+                
+                <div className="month-selector">
+                    <label><FaCalendarAlt /> Select Month: </label>
+                    <input 
+                        type="month" 
+                        value={selectedMonth} 
+                        onChange={(e) => setSelectedMonth(e.target.value)} 
+                        className="month-input"
+                    />
+                </div>
             </div>
 
             <form onSubmit={handleSubmit} className="profile-form-grid">
                 
-                {/* SECTION 1: INCOME */}
                 <div className="form-section">
                     <h3>💰 Income Source</h3>
                     <div className="input-group">
-                        <label>Monthly Net Earnings (Salary)</label>
+                        <label>Net Earnings (Salary)</label>
                         <input 
                             type="number" 
                             name="netEarnings" 
@@ -111,7 +163,6 @@ const Profile = () => {
                     </div>
                 </div>
 
-                {/* SECTION 2: MONTHLY FIXED EXPENSES */}
                 <div className="form-section">
                     <h3>📉 Fixed Monthly Expenses</h3>
                     <div className="grid-2-col">
@@ -150,7 +201,6 @@ const Profile = () => {
                     </div>
                 </div>
 
-                {/* SECTION 3: LIFESTYLE & FAMILY */}
                 <div className="form-section">
                     <h3>👨‍👩‍👧 Family & Lifestyle</h3>
                     <div className="grid-2-col">
@@ -167,7 +217,6 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    {/* Conditional Rendering for Children */}
                     <div className="grid-2-col" style={{ marginTop: '15px' }}>
                         <div className="input-group">
                             <label>Do you have Children?</label>
@@ -186,7 +235,6 @@ const Profile = () => {
                     </div>
                 </div>
 
-                {/* SECTION 4: SAVINGS & INVESTMENTS */}
                 <div className="form-section">
                     <h3>🐷 Current Savings & Assets</h3>
                     <div className="grid-3-col">
@@ -205,15 +253,14 @@ const Profile = () => {
                     </div>
                 </div>
 
-                {/* SECTION 5: OTHER */}
                 <div className="form-section">
-                    <h3>📝 Other Details</h3>
+                    <h3>📝 Notes for this Month</h3>
                     <div className="input-group">
-                        <label>Any other financial commitments?</label>
+                        <label>Any special financial events?</label>
                         <textarea 
                             name="notes" 
                             rows="3" 
-                            placeholder="Example: Sending money to parents, Insurance premiums..." 
+                            placeholder="Example: Bought a new phone, Received bonus..." 
                             value={formData.notes} 
                             onChange={handleChange}
                         ></textarea>
@@ -221,7 +268,7 @@ const Profile = () => {
                 </div>
 
                 <button type="submit" className="save-btn">
-                    <FaSave /> Save Profile
+                    <FaSave /> Save {selectedMonth} Record
                 </button>
             </form>
         </div>

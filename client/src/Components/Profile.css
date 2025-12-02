@@ -94,3 +94,25 @@
 @media (max-width: 768px) {
     .grid-2-col, .grid-3-col { grid-template-columns: 1fr; }
 }
+
+/* Add this to Profile.css */
+.month-selector {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8fafc;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    width: fit-content;
+}
+
+.month-input {
+    padding: 5px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    color: #334155;
+    font-weight: 500;
+    cursor: pointer;
+}

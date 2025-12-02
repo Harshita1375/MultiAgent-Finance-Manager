@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import axios from 'axios';
 import { 
-    FaHome, FaUser, FaRobot, FaWallet, FaPiggyBank, FaBell, FaBars, FaSignOutAlt 
+    FaHome, FaUser, FaRobot, FaWallet, FaPiggyBank, FaBell, FaBars, FaSignOutAlt, FaChartLine 
 } from 'react-icons/fa';
 import './Dashboard.css'; 
-import Profile from './Profile';
+import Profile from './Profile';    
 import Analytics from './Analytics';
 
 const Dashboard = () => {
@@ -13,12 +12,8 @@ const Dashboard = () => {
     const navigate = useNavigate();
     
     const [user, setUser] = useState({ name: 'User' });
-    const [expenses, setExpenses] = useState([]);
-    const [totalExpenses, setTotalExpenses] = useState(0);
     const [activeTab, setActiveTab] = useState('overview'); 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
     useEffect(() => {
         const googleToken = searchParams.get('token');
@@ -31,55 +26,13 @@ const Dashboard = () => {
         if (!token) {
             navigate('/'); 
         } else {
-            fetchData(token);
+
         }
     }, [searchParams, navigate]);
-
-    const fetchData = async (token) => {
-        try {
-            const config = { headers: { 'x-auth-token': token } };
-            const res = await axios.get(`${API_URL}/api/expenses`, config);
-            setExpenses(res.data);
-            const total = res.data.reduce((acc, curr) => acc + curr.amount, 0);
-            setTotalExpenses(total);
-        } catch (err) {
-            console.error(err);
-            if(err.response?.status === 401) handleLogout();
-        }
-    };
 
     const handleLogout = () => {
         localStorage.removeItem('token');
         navigate('/');
-    };
-
-    const renderContent = () => {
-        switch (activeTab) {
-            case 'overview':
-                return (
-                    <div className="view-content">
-                        <Analytics /> 
-                    </div>
-                );
-
-            case 'profile':
-                return (
-                    <div className="view-content">
-                        <Profile /> 
-                    </div>
-                );
-
-            case 'advisory':
-                return <div className="view-content"><h2>🤵 Advisory Agent</h2><p>Coming soon...</p></div>;
-            case 'expense':
-                return <div className="view-content"><h2>💸 Expense Agent</h2><p>Coming soon...</p></div>;
-            case 'savings':
-                return <div className="view-content"><h2>🐷 Savings Agent</h2><p>Coming soon...</p></div>;
-            case 'notifications':
-                return <div className="view-content"><h2>🔔 Alerts</h2><p>No new notifications.</p></div>;
-            default:
-                return null;
-        }
     };
 
     return (
@@ -94,8 +47,9 @@ const Dashboard = () => {
                     <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => setActiveTab('overview')}>
                         <FaHome /> <span>Overview</span>
                     </button>
+                    
                     <button className={activeTab === 'profile' ? 'active' : ''} onClick={() => setActiveTab('profile')}>
-                        <FaUser /> <span>Profile</span>
+                        <FaUser /> <span>Profile & History</span>
                     </button>
                     
                     <div className="divider">AGENTS</div>
@@ -122,7 +76,47 @@ const Dashboard = () => {
             </div>
 
             <div className="main-content-wrapper">
-                {renderContent()}
+
+                {activeTab === 'overview' && (
+                    <div className="view-content">
+                        <Analytics userName={user.name} />
+                    </div>
+                )}
+
+                {activeTab === 'profile' && (
+                    <div className="view-content">
+                       
+                        <Profile userName={user.name} />
+                    </div>
+                )}
+                
+                {activeTab === 'advisory' && (
+                    <div className="view-content">
+                        <h2>🤵 Advisory Agent</h2>
+                        <p>I will analyze your Profile data and give advice soon.</p>
+                    </div>
+                )}
+                
+                {activeTab === 'expense' && (
+                    <div className="view-content">
+                        <h2>💸 Expense Agent</h2>
+                        <p>Tracking expenses...</p>
+                    </div>
+                )}
+
+                {activeTab === 'savings' && (
+                    <div className="view-content">
+                        <h2>🐷 Savings Agent</h2>
+                        <p>Calculating compound interest...</p>
+                    </div>
+                )}
+
+                {activeTab === 'notifications' && (
+                    <div className="view-content">
+                        <h2>🔔 Notifications</h2>
+                        <p>No new alerts.</p>
+                    </div>
+                )}
             </div>
         </div>
     );
