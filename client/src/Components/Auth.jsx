@@ -15,19 +15,19 @@ const Auth = () => {
     const navigate = useNavigate();
 
     const { username, email, password } = formData;
+    const API_URL = process.env.REACT_APP_API_URL;
 
     const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const handleGoogleLogin = () => {
 
-        window.open("http://localhost:5000/api/auth/google", "_self");
+        window.open(`${API_URL}/api/auth/google`, "_self");
     };
 
     const onSubmit = async e => {
         e.preventDefault();
         setError('');
         
-        // Define Endpoint based on mode
         const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
         
         try {
@@ -35,12 +35,11 @@ const Auth = () => {
             const body = JSON.stringify({ 
                 email, 
                 password, 
-                ...( !isLogin && { username }) // Only send username if registering
+                ...( !isLogin && { username }) 
             });
 
-            const res = await axios.post(`http://localhost:5000${endpoint}`, body, config);
+            const res = await axios.post(`${API_URL}${endpoint}`, body, config);
 
-            // If Registering, auto-switch to login or auto-login (logic depends on preference)
             if (!isLogin) {
                 setIsLogin(true);
                 setError('Registration successful! Please login.');
