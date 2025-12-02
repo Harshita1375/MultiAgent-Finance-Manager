@@ -1,62 +1,150 @@
-.dashboard-container {
-    padding: 2rem;
-    background-color: #f4f6f8;
-    min-height: 100vh;
+/* Layout Wrapper */
+.dashboard-layout {
+    display: flex;
+    height: 100vh;
+    background-color: #f4f7fa;
     font-family: 'Segoe UI', sans-serif;
+    overflow: hidden;
 }
 
-.dashboard-header {
+/* --- SIDEBAR --- */
+.sidebar {
+    background-color: #1e293b;
+    color: white;
+    height: 100vh;
+    transition: width 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar.open { width: 260px; }
+.sidebar.closed { width: 70px; }
+
+.sidebar-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    padding: 20px;
+    border-bottom: 1px solid #334155;
 }
 
-.btn-logout {
-    padding: 8px 16px;
-    background-color: #ff4757;
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    /* Hide text when closed */
+    display: var(--sidebar-display, block); 
+}
+
+.sidebar.closed .sidebar-header h3, 
+.sidebar.closed span, 
+.sidebar.closed .divider {
+    display: none;
+}
+
+.toggle-btn { cursor: pointer; font-size: 1.2rem; }
+
+/* Navigation */
+.sidebar-nav {
+    flex: 1;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.sidebar-nav button {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.sidebar-nav button:hover { background-color: #334155; color: white; }
+.sidebar-nav button.active { background-color: #007bff; color: white; }
+.sidebar-nav button svg { font-size: 1.2rem; min-width: 20px; }
+
+.divider {
+    font-size: 0.75rem;
+    color: #64748b;
+    padding: 20px 20px 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.sidebar-footer { padding: 20px; border-top: 1px solid #334155; }
+.logout-btn {
+    background: #ef4444;
     color: white;
     border: none;
-    border-radius: 4px;
+    padding: 10px;
+    border-radius: 6px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     cursor: pointer;
 }
+.sidebar.closed .logout-btn { padding: 10px 0; }
+
+/* --- MAIN CONTENT --- */
+.main-content-wrapper {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+.view-content h2 { margin-bottom: 20px; color: #1e293b; }
 
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    gap: 20px;
+    margin-bottom: 30px;
 }
 
 .card {
     background: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
-.card h3 { margin: 0; font-size: 0.9rem; color: #666; }
-.card .amount { font-size: 1.8rem; font-weight: bold; color: #2d3436; margin-top: 0.5rem; }
+.amount { font-size: 2rem; font-weight: bold; margin: 10px 0; color: #0f172a; }
+.text-danger { color: #ef4444; }
+.text-success { color: #22c55e; }
 
-.main-content {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 1.5rem;
-}
-
-.chart-section, .agent-section {
+/* Recent Activity */
+.recent-activity {
     background: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
-.placeholder-chart {
-    height: 200px;
-    background-color: #eee;
+.transaction-list { list-style: none; padding: 0; }
+.transaction-item {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #888;
-    border-radius: 4px;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+.transaction-item .minus { color: #ef4444; font-weight: 600; }
+
+/* Profile Form */
+.profile-card { max-width: 500px; }
+.profile-form { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #64748b; }
+.form-group input, .form-group select {
+    width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;
+}
+.btn-primary {
+    background-color: #007bff; color: white; padding: 12px; border: none; border-radius: 6px; cursor: pointer;
 }
