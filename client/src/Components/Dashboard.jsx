@@ -6,21 +6,20 @@ import {
 } from 'react-icons/fa';
 import './Dashboard.css'; 
 import Profile from './Profile';
+import Analytics from './Analytics';
 
 const Dashboard = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     
-    // --- STATE ---
     const [user, setUser] = useState({ name: 'User' });
     const [expenses, setExpenses] = useState([]);
     const [totalExpenses, setTotalExpenses] = useState(0);
-    const [activeTab, setActiveTab] = useState('overview'); // Controls which view is shown
+    const [activeTab, setActiveTab] = useState('overview'); 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-    // --- AUTH & FETCH LOGIC ---
     useEffect(() => {
         const googleToken = searchParams.get('token');
         if (googleToken) {
@@ -54,42 +53,12 @@ const Dashboard = () => {
         navigate('/');
     };
 
-    // --- COMPONENT RENDERERS ---
     const renderContent = () => {
         switch (activeTab) {
             case 'overview':
                 return (
                     <div className="view-content">
-                        <h2>📊 Financial Overview</h2>
-                        <div className="stats-grid">
-                            <div className="card">
-                                <h3>Total Balance</h3>
-                                {/* Assuming a static income for now until Profile is connected */}
-                                <p className="amount">${(5000 - totalExpenses).toFixed(2)}</p>
-                                <small>Based on $5000 income</small>
-                            </div>
-                            <div className="card">
-                                <h3>Total Expenses</h3>
-                                <p className="amount text-danger">${totalExpenses.toFixed(2)}</p>
-                            </div>
-                            <div className="card">
-                                <h3>Active Savings</h3>
-                                <p className="amount text-success">$1,200.00</p>
-                            </div>
-                        </div>
-                        <div className="recent-activity">
-                            <h3>Recent Transactions</h3>
-                            {expenses.length > 0 ? (
-                                <ul className="transaction-list">
-                                    {expenses.slice(0, 5).map(exp => (
-                                        <li key={exp._id} className="transaction-item">
-                                            <span>{exp.title}</span>
-                                            <span className="minus">-${exp.amount}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : <p>No transactions yet.</p>}
-                        </div>
+                        <Analytics /> 
                     </div>
                 );
 
@@ -115,7 +84,6 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-layout">
-            {/* --- SIDEBAR --- */}
             <div className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
                 <div className="sidebar-header">
                     <h3>FinSync</h3>
@@ -153,7 +121,6 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* --- MAIN CONTENT --- */}
             <div className="main-content-wrapper">
                 {renderContent()}
             </div>
