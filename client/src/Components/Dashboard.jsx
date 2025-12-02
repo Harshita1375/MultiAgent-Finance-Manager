@@ -5,6 +5,7 @@ import {
     FaHome, FaUser, FaRobot, FaWallet, FaPiggyBank, FaBell, FaBars, FaSignOutAlt 
 } from 'react-icons/fa';
 import './Dashboard.css'; 
+import Profile from './Profile';
 
 const Dashboard = () => {
     const [searchParams] = useSearchParams();
@@ -95,29 +96,7 @@ const Dashboard = () => {
             case 'profile':
                 return (
                     <div className="view-content">
-                        <h2>👤 User Profile</h2>
-                        <div className="card profile-card">
-                            <p>Update your financial details here to help the agents analyze better.</p>
-                            <form className="profile-form">
-                                <div className="form-group">
-                                    <label>Monthly Income</label>
-                                    <input type="number" placeholder="5000" />
-                                </div>
-                                <div className="form-group">
-                                    <label>Savings Goal</label>
-                                    <input type="text" placeholder="Buy a Car" />
-                                </div>
-                                <div className="form-group">
-                                    <label>Risk Tolerance</label>
-                                    <select>
-                                        <option>Low</option>
-                                        <option>Moderate</option>
-                                        <option>High</option>
-                                    </select>
-                                </div>
-                                <button className="btn-primary">Save Profile</button>
-                            </form>
-                        </div>
+                        <Profile /> 
                     </div>
                 );
 
