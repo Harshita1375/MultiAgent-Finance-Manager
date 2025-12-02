@@ -16,7 +16,6 @@ const Auth = () => {
 
     const { username, email, password } = formData;
     const API_URL = process.env.REACT_APP_API_URL;
-
     const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const handleGoogleLogin = () => {
