@@ -2,18 +2,14 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Doughnut, Radar } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, RadialLinearScale, PointElement, LineElement, Filler } from 'chart.js';
-import { FaCalendarAlt, FaLayerGroup } from 'react-icons/fa';
-import './Analytics.css'; 
+import './Analytics.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend, RadialLinearScale, PointElement, LineElement, Filler);
 
-const Analytics = ({ userName }) => {
+const Analytics = ({ userName, viewMode, selectedMonth }) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     
-    const [viewMode, setViewMode] = useState('all'); 
-    const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
-
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
     const formatINR = (amount) => {
@@ -43,8 +39,7 @@ const Analytics = ({ userName }) => {
     }, [viewMode, selectedMonth, API_URL]);
 
     if (loading) return <div className="loading">Crunching the numbers...</div>;
-    
-    if (!data || !data.totals) return <div className="no-data">No data found. Please add records in the Profile tab first.</div>;
+    if (!data || !data.totals) return <div className="no-data">No data found.</div>;
 
     const { totals, scores, insight } = data;
 
@@ -71,35 +66,6 @@ const Analytics = ({ userName }) => {
 
     return (
         <div className="analytics-container">
-            <div className="analytics-header">
-                <h2>📈 {userName}'s Financial DNA</h2>
-                
-                <div className="view-controls">
-                    <button 
-                        className={`view-btn ${viewMode === 'all' ? 'active' : ''}`} 
-                        onClick={() => setViewMode('all')}
-                    >
-                        <FaLayerGroup /> All-Time Combined
-                    </button>
-                    
-                    <button 
-                        className={`view-btn ${viewMode === 'month' ? 'active' : ''}`} 
-                        onClick={() => setViewMode('month')}
-                    >
-                        <FaCalendarAlt /> Single Month
-                    </button>
-
-                    {viewMode === 'month' && (
-                        <input 
-                            type="month" 
-                            className="month-picker-small"
-                            value={selectedMonth}
-                            onChange={(e) => setSelectedMonth(e.target.value)}
-                        />
-                    )}
-                </div>
-            </div>
-
             <div className="kpi-grid">
                 <div className="kpi-card income">
                     <h4>{viewMode === 'all' ? 'Total Earnings' : 'Monthly Income'}</h4>
@@ -116,7 +82,7 @@ const Analytics = ({ userName }) => {
             </div>
 
             <div className="charts-grid">
-                <div className="chart-card">
+               <div className="chart-card">
                     <h3>Distribution</h3>
                     <div className="chart-wrapper">
                         <Doughnut data={doughnutData} options={{ maintainAspectRatio: false }} />
