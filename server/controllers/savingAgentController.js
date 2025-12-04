@@ -1,24 +1,17 @@
 const MonthlyRecord = require('../models/MonthlyRecord');
-const axios = require('axios'); // Requires: npm install axios
-const yahooFinance = require('yahoo-finance2').default; // Requires: npm install yahoo-finance2
+const axios = require('axios'); 
+const yahooFinance = require('yahoo-finance2').default; 
 
-// --- DEFAULT FALLBACK RATES ---
 const DEFAULTS = {
     GOLD_RATE_10Y: 0.09, 
     SIP_RETURN: 0.12,    
     FD_RATE: 0.065
 };
 
-// Helper: Fetch Live Market Data (Gold & Sentiment)
 const fetchLiveMarketData = async () => {
     try {
         const apiKey = process.env.ALPHA_VANTAGE_KEY;
         let liveData = { ...DEFAULTS };
-
-        // In a real app, you would uncomment this to fetch real gold prices
-        // const goldRes = await axios.get(`https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=XAU&to_currency=INR&apikey=${apiKey}`);
-        
-        // Simulating live data for stability
         liveData.SIP_RETURN = 0.12; 
         return liveData;
     } catch (err) {
@@ -26,7 +19,6 @@ const fetchLiveMarketData = async () => {
     }
 };
 
-// Helper: Compound Interest
 const calculateFutureValue = (principal, monthly, rate, years) => {
     const months = years * 12;
     const monthlyRate = rate / 12;
@@ -35,12 +27,10 @@ const calculateFutureValue = (principal, monthly, rate, years) => {
     return Math.round(fvLump + fvSIP);
 };
 
-// --- 1. SAVINGS ANALYSIS ---
 exports.getSavingsAnalysis = async (req, res) => {
     try {
         const latestRecord = await MonthlyRecord.findOne({ user: req.user.id }).sort({ month: -1 });
         
-        // Default structure if no data
         let savings = { sip: 0, fdRd: 0, gold: 0 };
         let income = 0;
         let hasEMI = false;
@@ -99,7 +89,6 @@ exports.getSavingsAnalysis = async (req, res) => {
     }
 };
 
-// --- 2. TRADING SUGGESTIONS (THE MISSING PART) ---
 exports.getTradingSuggestions = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -114,14 +103,12 @@ exports.getTradingSuggestions = async (req, res) => {
         const totalFixed = (Number(expenses.rent)||0) + (Number(expenses.emi)||0) + (Number(expenses.grocery)||0) + (Number(expenses.electricity)||0);
         const totalSaved = (Number(savings.sip)||0) + (Number(savings.fdRd)||0) + (Number(savings.gold)||0);
         
-        // Estimate Free Cash
         const estimatedFreeCash = Math.max(0, income - totalFixed - totalSaved - (income * 0.1));
 
         if (estimatedFreeCash < 500) {
             return res.json({ freeCash: estimatedFreeCash, plans: [], message: "Low funds" });
         }
 
-        // Stock Watchlist
         const watchlist = [
             { symbol: 'NIFTYBEES.NS', name: 'Nifty 50 ETF', type: 'Safe' },
             { symbol: 'GOLDBEES.NS', name: 'Gold ETF', type: 'Safe' },
@@ -131,13 +118,11 @@ exports.getTradingSuggestions = async (req, res) => {
             { symbol: 'ZOMATO.NS', name: 'Zomato', type: 'Aggressive' }
         ];
 
-        // Fetch Prices
         let quotes = [];
         try {
             quotes = await yahooFinance.quote(watchlist.map(w => w.symbol));
         } catch (e) {
             console.log("Yahoo Finance Error, using mock data");
-            // Mock data if API fails
             quotes = watchlist.map(w => ({ symbol: w.symbol, regularMarketPrice: 2500, regularMarketChangePercent: 1.2 }));
         }
 

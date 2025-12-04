@@ -4,7 +4,7 @@ const auth = require('../middleware/auth');
 const { getSavingsAnalysis, analyzeAsset, getTradingSuggestions } = require('../controllers/savingAgentController');
 
 router.get('/analyze', auth, getSavingsAnalysis);
-router.post('/asset-audit', auth, analyzeAsset);
+router.post('/analyze', analyzeAsset);
 router.get('/trading', auth, getTradingSuggestions);
 
 module.exports = router;
