@@ -28,5 +28,7 @@ app.use('/api/profile', require('./routes/profileRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
 app.use('/api/records', require('./routes/recordRoutes'));
 app.use('/api/agent/expense', require('./routes/expenseAgentRoutes'));
+app.use('/api/agent/savings', require('./routes/savingAgentRoutes'));
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server started on port ${PORT}`));

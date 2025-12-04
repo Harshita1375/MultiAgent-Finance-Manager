@@ -9,22 +9,21 @@ import Profile from './Profile';
 import Analytics from './Analytics';
 import ExpenseAgent from './ExpenseAgent';
 import TransactionHistory from './TransactionHistory';
+import SavingAgent from './SavingAgent';
 
 const Dashboard = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     
-    // User State
     const [user, setUser] = useState({ name: 'Guest' });
     const [activeTab, setActiveTab] = useState('overview'); 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const [isProfileExpanded, setIsProfileExpanded] = useState(false); // Dropdown State
+    const [isProfileExpanded, setIsProfileExpanded] = useState(false); 
 
-    // Analytics View State (Lifted Up)
     const [viewMode, setViewMode] = useState('all'); 
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
 
-    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    const API_URL = process.env.REACT_APP_API_URL;
 
     useEffect(() => {
         const googleToken = searchParams.get('token');
@@ -55,7 +54,6 @@ const Dashboard = () => {
         navigate('/');
     };
 
-    // Helper for mobile: auto-close sidebar on selection
     const handleNavClick = (tab) => {
         setActiveTab(tab);
         if (window.innerWidth <= 768) setIsSidebarOpen(false);
@@ -64,7 +62,6 @@ const Dashboard = () => {
     return (
         <div className="dashboard-layout">
             
-            {/* --- SIDEBAR --- */}
             <div className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
                 <div className="sidebar-header">
                     <h3>FinSync</h3>
@@ -76,7 +73,6 @@ const Dashboard = () => {
                         <FaHome /> <span>Overview</span>
                     </button>
                     
-                    {/* PROFILE DROPDOWN */}
                     <button 
                         className={`nav-dropdown-btn ${activeTab.includes('profile') ? 'active' : ''}`}
                         onClick={() => setIsProfileExpanded(!isProfileExpanded)}
@@ -87,7 +83,6 @@ const Dashboard = () => {
                         {isProfileExpanded ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
                     </button>
 
-                    {/* SUB-MENU (Only visible when expanded) */}
                     {isProfileExpanded && (
                         <div className="sidebar-subnav">
                             <button 
@@ -132,13 +127,10 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* --- MAIN CONTENT --- */}
             <div className="main-content-wrapper">
                 
-                {/* TOP BAR */}
                 <div className="top-bar">
                     <div className="header-left">
-                        {/* If Overview, show Analytics Controls. If other tab, show Title. */}
                         {activeTab === 'overview' ? (
                             <div className="analytics-controls-wrapper">
                                 <div className="header-text-block">
@@ -185,7 +177,6 @@ const Dashboard = () => {
                         )}
                     </div>
 
-                    {/* User Info */}
                     <div className="user-info">
                         <div className="user-text">
                             <span className="welcome-sub">Welcome back,</span>
@@ -195,10 +186,8 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* CONTENT AREA */}
                 <div className="content-area">
                     
-                    {/* 1. OVERVIEW */}
                     {activeTab === 'overview' && (
                         <Analytics 
                             userName={user.name} 
@@ -207,7 +196,6 @@ const Dashboard = () => {
                         />
                     )}
 
-                    {/* 2. PROFILE SUB-PAGES */}
                     {activeTab === 'profile-edit' && <Profile userName={user.name} />}
                     {activeTab === 'profile-history' && <TransactionHistory />}
                     
@@ -220,7 +208,7 @@ const Dashboard = () => {
                     {/* 3. AGENTS */}
                     {activeTab === 'advisory' && <div className="view-content placeholder-view"><h2>Advisory Agent</h2><p>Coming Soon...</p></div>}
                     {activeTab === 'expense' && <ExpenseAgent />}
-                    {activeTab === 'savings' && <div className="view-content placeholder-view"><h2>Savings Agent</h2><p>Coming Soon...</p></div>}
+                    {activeTab === 'savings' && <SavingAgent />}
                     {activeTab === 'notifications' && <div className="view-content placeholder-view"><h2>Notifications</h2><p>No new alerts.</p></div>}
                 </div>
             </div>
