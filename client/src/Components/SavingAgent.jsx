@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Line } from 'react-chartjs-2';
 import { 
-    FaPiggyBank, FaLightbulb, FaSpinner 
+    FaPiggyBank, FaLightbulb, FaSpinner, FaCalculator 
 } from 'react-icons/fa';
 import './SavingAgent.css';
 
-// --- 1. IMPORT CHART.JS MODULES ---
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -19,7 +18,6 @@ import {
   Filler 
 } from 'chart.js';
 
-// --- 2. REGISTER THEM ---
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -34,9 +32,14 @@ ChartJS.register(
 const SavingAgent = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [assetType, setAssetType] = useState('house');
-    const [assetValue, setAssetValue] = useState('');
     const [assetResult, setAssetResult] = useState(null);
+
+    const [loanDetails, setLoanDetails] = useState({
+        assetType: 'house',
+        assetValue: '',
+        emiAmount: '',
+        tenure: ''
+    });
 
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -50,27 +53,31 @@ const SavingAgent = () => {
                 setData(res.data);
                 setLoading(false);
             } catch (err) {
-                console.error("Error fetching savings analysis", err);
+                console.error(err);
                 setLoading(false);
             }
         };
         fetchSavingsData();
     }, []);
 
+    const handleInputChange = (e) => {
+        setLoanDetails({ ...loanDetails, [e.target.name]: e.target.value });
+    };
+
     const handleAssetAudit = async (e) => {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
             const res = await axios.post(`${API_URL}/api/agent/savings/asset-audit`, {
-                type: assetType,
-                value: assetValue,
-                emiAmount: 20000, 
-                tenureYears: 20,
+                type: loanDetails.assetType,
+                value: Number(loanDetails.assetValue),
+                emiAmount: Number(loanDetails.emiAmount), 
+                tenureYears: Number(loanDetails.tenure),
                 location: 'Tier-1 City' 
             }, { headers: { 'x-auth-token': token } });
             setAssetResult(res.data);
         } catch (err) {
-            alert("Error analyzing asset");
+            alert("Error analyzing asset. Please check values.");
         }
     };
 
@@ -85,7 +92,6 @@ const SavingAgent = () => {
 
     const { currentSavings, projection, suggestions, marketStatus, hasEMI } = data;
 
-    // Chart Configuration
     const growthChartData = {
         labels: ['Today', '5 Years', '10 Years', '20 Years'],
         datasets: [{
@@ -114,9 +120,7 @@ const SavingAgent = () => {
                 callbacks: {
                     label: function(context) {
                         let label = context.dataset.label || '';
-                        if (label) {
-                            label += ': ';
-                        }
+                        if (label) label += ': ';
                         if (context.parsed.y !== null) {
                             label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(context.parsed.y);
                         }
@@ -138,7 +142,6 @@ const SavingAgent = () => {
 
     return (
         <div className="saving-container">
-            {/* HEADER */}
             <div className="saving-header">
                 <FaPiggyBank className="saving-icon-main" />
                 <div>
@@ -148,7 +151,6 @@ const SavingAgent = () => {
                 </div>
             </div>
 
-            {/* WEALTH PROJECTION CARD */}
             <div className="projection-card">
                 <div className="card-header">
                     <h3>📈 Your Financial Future</h3>
@@ -160,45 +162,42 @@ const SavingAgent = () => {
                 </div>
 
                 <div className="projection-stats">
-                    <div className="stat-box">
-                        <span>In 5 Years</span>
-                        <strong>
-                            {/* Shows 5 Lakhs, 10 Lakhs, etc. */}
-                            {new Intl.NumberFormat('en-IN', {
-                                style: 'currency',
-                                currency: 'INR',
-                                maximumFractionDigits: 0
-                            }).format(projection.years5)}
-                        </strong>
-                    </div>
-                    <div className="stat-box">
-                        <span>In 10 Years</span>
-                        <strong>
-                            {new Intl.NumberFormat('en-IN', {
-                                style: 'currency',
-                                currency: 'INR',
-                                maximumFractionDigits: 0
-                            }).format(projection.years10)}
-                        </strong>
-                    </div>
-                    <div className="stat-box highlight">
-                        <span>In 20 Years</span>
-                        <strong>
-                            {/* Logic: If > 1 Crore, show decimals (e.g. ₹1.52 Cr). Else show full number. */}
-                            {projection.years20 > 10000000 
-                                ? `₹${(projection.years20 / 10000000).toFixed(2)} Cr`
-                                : new Intl.NumberFormat('en-IN', {
-                                    style: 'currency',
-                                    currency: 'INR',
-                                    maximumFractionDigits: 0
-                                  }).format(projection.years20)
-                            }
-                        </strong>
-                    </div>
+                    {[5, 10, 20].map((years) => {
+                        const totalValue = projection[`years${years}`];
+                        const invested = (currentSavings.fdRd + currentSavings.gold) + (currentSavings.sip * 12 * years);
+                        const profit = totalValue - invested;
+                        
+                        return (
+                            <div key={years} className={`stat-box ${years === 20 ? 'highlight' : ''}`}>
+                                <span>In {years} Years</span>
+                                
+                                <strong>
+                                    {totalValue > 10000000 
+                                        ? `₹${(totalValue / 10000000).toFixed(2)} Cr` 
+                                        : new Intl.NumberFormat('en-IN', {
+                                            style: 'currency',
+                                            currency: 'INR',
+                                            maximumFractionDigits: 0
+                                          }).format(totalValue)
+                                    }
+                                </strong>
+
+                                <small style={{ color: '#10b981', display: 'block', marginTop: '4px', fontSize: '0.85rem' }}>
+                                    (+{profit > 10000000 
+                                        ? `₹${(profit / 10000000).toFixed(2)} Cr`
+                                        : new Intl.NumberFormat('en-IN', { 
+                                            style: 'currency', 
+                                            currency: 'INR', 
+                                            maximumFractionDigits: 0 
+                                          }).format(profit)
+                                    } Profit)
+                                </small>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* AI SUGGESTIONS */}
             <div className="suggestions-section">
                 <h3>💡 AI Investment Advice</h3>
                 <div className="suggestion-grid">
@@ -211,26 +210,58 @@ const SavingAgent = () => {
                 </div>
             </div>
 
-            {/* ASSET AUDITOR */}
             {hasEMI && (
                 <div className="asset-auditor">
                     <div className="audit-header">
-                        <h3>🏠 Loan Analyzer</h3>
-                        <p>We detected an EMI. Is this for a House or a Car? Let's check if it's a good investment.</p>
+                        <h3><FaCalculator /> Loan Analyzer</h3>
+                        <p>We detected an EMI. Enter details to check if this loan is building wealth.</p>
                     </div>
 
                     <form onSubmit={handleAssetAudit} className="audit-form">
-                        <select value={assetType} onChange={(e) => setAssetType(e.target.value)}>
-                            <option value="house">House Loan</option>
-                            <option value="car">Car Loan</option>
-                        </select>
-                        <input 
-                            type="number" 
-                            placeholder="Current Asset Value (₹)" 
-                            value={assetValue}
-                            onChange={(e) => setAssetValue(e.target.value)}
-                            required
-                        />
+                        <div className="form-group-audit">
+                            <label>Loan Type</label>
+                            <select name="assetType" value={loanDetails.assetType} onChange={handleInputChange}>
+                                <option value="house">House Loan</option>
+                                <option value="car">Car Loan</option>
+                            </select>
+                        </div>
+
+                        <div className="form-group-audit">
+                            <label>Current Asset Value (₹)</label>
+                            <input 
+                                type="number" 
+                                name="assetValue"
+                                placeholder="Total Property Price" 
+                                value={loanDetails.assetValue}
+                                onChange={handleInputChange}
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group-audit">
+                            <label>Monthly EMI (₹)</label>
+                            <input 
+                                type="number" 
+                                name="emiAmount"
+                                placeholder="e.g. 25000" 
+                                value={loanDetails.emiAmount}
+                                onChange={handleInputChange}
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group-audit">
+                            <label>Tenure (Years)</label>
+                            <input 
+                                type="number" 
+                                name="tenure"
+                                placeholder="e.g. 20" 
+                                value={loanDetails.tenure}
+                                onChange={handleInputChange}
+                                required
+                            />
+                        </div>
+
                         <button type="submit" className="audit-btn">Analyze ROI</button>
                     </form>
 

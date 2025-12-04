@@ -19,6 +19,17 @@
     border-radius: 50%;
 }
 
+.saving-header h2 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 1.5rem;
+}
+
+.saving-header p {
+    margin: 5px 0 0;
+    color: #64748b;
+}
+
 .market-badge {
     background: #dbeafe;
     color: #1e40af;
@@ -26,7 +37,7 @@
     border-radius: 4px;
     font-size: 0.85rem;
     font-weight: 600;
-    margin-top: 5px;
+    margin-top: 8px;
     display: inline-block;
 }
 
@@ -38,9 +49,12 @@
     margin-bottom: 30px;
 }
 
+.card-header h3 { margin: 0; color: #334155; font-size: 1.2rem; }
+.subtitle { font-size: 0.85rem; color: #94a3b8; display: block; margin-top: 5px; }
+
 .chart-wrapper-large {
     height: 300px;
-    margin: 20px 0;
+    margin: 25px 0;
 }
 
 .projection-stats {
@@ -49,38 +63,63 @@
     gap: 15px;
     margin-top: 20px;
     padding-top: 20px;
-    border-top: 1px solid #f3f4f6;
+    border-top: 1px solid #f1f5f9;
 }
 
 .stat-box {
     text-align: center;
-    padding: 10px;
+    padding: 15px 10px;
     background: #f8fafc;
     border-radius: 8px;
 }
 
-.stat-box span { display: block; font-size: 0.9rem; color: #64748b; margin-bottom: 5px; }
-.stat-box strong { font-size: 1.2rem; color: #0f172a; }
+.stat-box span { 
+    display: block; 
+    font-size: 0.9rem; 
+    color: #64748b; 
+    margin-bottom: 5px; 
+    font-weight: 500;
+}
+
+.stat-box strong { 
+    font-size: 1.3rem; 
+    color: #0f172a; 
+    display: block;
+}
+
 .stat-box.highlight strong { color: #10b981; }
+
+.suggestions-section { margin-bottom: 40px; }
+.suggestions-section h3 { color: #334155; margin-bottom: 20px; font-size: 1.1rem; }
 
 .suggestion-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
 }
 
 .suggestion-card {
     background: #fff;
-    padding: 15px;
-    border-radius: 10px;
+    padding: 20px;
+    border-radius: 12px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     display: flex;
-    gap: 12px;
+    gap: 15px;
     align-items: flex-start;
     border-left: 4px solid #f59e0b;
+    transition: transform 0.2s ease;
 }
 
-.tip-icon { color: #f59e0b; font-size: 1.2rem; margin-top: 3px; }
+.suggestion-card:hover { transform: translateY(-3px); }
+
+.tip-icon { 
+    color: #f59e0b; 
+    font-size: 1.4rem; 
+    margin-top: 3px; 
+    flex-shrink: 0; 
+}
+
+.suggestion-card p { margin: 0; line-height: 1.5; color: #475569; font-size: 0.95rem; }
 
 .asset-auditor {
     margin-top: 40px;
@@ -88,20 +127,53 @@
     color: white;
     padding: 30px;
     border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
+
+.audit-header h3 { margin: 0 0 8px 0; color: #f8fafc; font-size: 1.2rem; }
+.audit-header p { color: #cbd5e1; font-size: 0.9rem; margin-bottom: 25px; }
 
 .audit-form {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr auto; 
+    gap: 15px;
+    align-items: end;
 }
 
-.audit-form input, .audit-form select {
+.form-group-audit {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group-audit label {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.form-group-audit input, 
+.form-group-audit select {
     padding: 12px;
     border-radius: 8px;
-    border: none;
-    flex: 1;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
+.form-group-audit input:focus, 
+.form-group-audit select:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #3b82f6;
+}
+
+.form-group-audit select option {
+    background: #1e293b;
+    color: white;
 }
 
 .audit-btn {
@@ -112,22 +184,54 @@
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
+    height: 42px; 
+    transition: background 0.2s;
+    white-space: nowrap;
 }
 
+.audit-btn:hover { background: #2563eb; }
+
 .audit-result {
-    margin-top: 20px;
-    background: rgba(255,255,255,0.1);
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.2);
+    margin-top: 25px;
+    background: rgba(255,255,255,0.05);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.audit-result h4 { margin: 0 0 8px 0; font-size: 1.2rem; color: #fbbf24; }
+.audit-result p { margin: 0; line-height: 1.5; color: #e2e8f0; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .agent-loading, .agent-empty {
     text-align: center;
-    padding: 50px;
+    padding: 60px 20px;
     color: #64748b;
     font-size: 1.1rem;
 }
 
 .spin { animation: spin 1s linear infinite; margin-right: 10px; }
 @keyframes spin { 100% { transform: rotate(360deg); } }
+
+@media (max-width: 1024px) {
+    .audit-form {
+        grid-template-columns: 1fr 1fr; 
+    }
+    .audit-btn { grid-column: span 2; width: 100%; }
+}
+
+@media (max-width: 768px) {
+    .projection-stats { grid-template-columns: 1fr; }
+    
+    .audit-form {
+        grid-template-columns: 1fr; 
+    }
+    .audit-btn { grid-column: span 1; }
+    
+    .saving-header { flex-direction: column; text-align: center; }
+}
