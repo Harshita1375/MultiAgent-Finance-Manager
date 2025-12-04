@@ -235,3 +235,83 @@
     
     .saving-header { flex-direction: column; text-align: center; }
 }
+
+/* --- TRADING SECTION --- */
+.trading-section {
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.section-header-trade {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.section-header-trade h3 { margin: 0; color: #334155; font-size: 1.2rem; }
+
+.trading-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.trade-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: 1px solid #f1f5f9;
+    transition: transform 0.2s;
+}
+
+.trade-card:hover { transform: translateY(-5px); border-color: #93c5fd; }
+
+.trade-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.badge.safe { background: #dcfce7; color: #166534; }
+.badge.moderate { background: #dbeafe; color: #1e40af; }
+.badge.aggressive { background: #fee2e2; color: #991b1b; }
+
+.stock-up { color: #10b981; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 2px; }
+.stock-down { color: #ef4444; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 2px; }
+
+.trade-card h4 { margin: 0 0 10px 0; color: #0f172a; font-size: 1rem; }
+
+.trade-details {
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 8px 0;
+    margin-bottom: 8px;
+}
+
+.trade-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.trade-row strong { color: #334155; }
+.action-text { color: #3b82f6 !important; }
+
+.trade-footer {
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+}

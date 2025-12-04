@@ -16,7 +16,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.6.3",
     "passport": "^0.6.0",
-    "passport-google-oauth20": "^2.0.0"
+    "passport-google-oauth20": "^2.0.0",
+    "yahoo-finance2": "^3.10.2"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
