@@ -11,7 +11,7 @@ const ExpenseAgent = () => {
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
     const [customLimits, setCustomLimits] = useState({ needs: 50, wants: 30 }); 
 
-    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    const API_URL = process.env.REACT_APP_API_URL;
 
     const fetchAnalysis = async () => {
         setLoading(true);
