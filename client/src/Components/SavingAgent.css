@@ -30,7 +30,6 @@
     display: inline-block;
 }
 
-/* Projection Card */
 .projection-card {
     background: white;
     padding: 25px;
@@ -64,7 +63,6 @@
 .stat-box strong { font-size: 1.2rem; color: #0f172a; }
 .stat-box.highlight strong { color: #10b981; }
 
-/* Suggestions */
 .suggestion-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -84,7 +82,6 @@
 
 .tip-icon { color: #f59e0b; font-size: 1.2rem; margin-top: 3px; }
 
-/* Asset Auditor */
 .asset-auditor {
     margin-top: 40px;
     background: linear-gradient(135deg, #1e293b 0%, #334155 100%);

@@ -16,7 +16,7 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler // Needed for the area fill under the line
+  Filler 
 } from 'chart.js';
 
 // --- 2. REGISTER THEM ---
@@ -109,7 +109,7 @@ const SavingAgent = () => {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: { display: false }, // Hide legend for cleaner look
+            legend: { display: false }, 
             tooltip: {
                 callbacks: {
                     label: function(context) {
@@ -118,7 +118,7 @@ const SavingAgent = () => {
                             label += ': ';
                         }
                         if (context.parsed.y !== null) {
-                            label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(context.parsed.y);
+                            label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(context.parsed.y);
                         }
                         return label;
                     }
@@ -128,7 +128,6 @@ const SavingAgent = () => {
         scales: {
             y: {
                 ticks: {
-                    // Format Y-axis as Currency (e.g. 5L)
                     callback: function(value) {
                         return '₹' + (value / 100000).toFixed(1) + 'L';
                     }
@@ -163,15 +162,38 @@ const SavingAgent = () => {
                 <div className="projection-stats">
                     <div className="stat-box">
                         <span>In 5 Years</span>
-                        <strong>₹{(projection.years5 / 100000).toFixed(1)} Lakhs</strong>
+                        <strong>
+                            {/* Shows 5 Lakhs, 10 Lakhs, etc. */}
+                            {new Intl.NumberFormat('en-IN', {
+                                style: 'currency',
+                                currency: 'INR',
+                                maximumFractionDigits: 0
+                            }).format(projection.years5)}
+                        </strong>
                     </div>
                     <div className="stat-box">
                         <span>In 10 Years</span>
-                        <strong>₹{(projection.years10 / 100000).toFixed(1)} Lakhs</strong>
+                        <strong>
+                            {new Intl.NumberFormat('en-IN', {
+                                style: 'currency',
+                                currency: 'INR',
+                                maximumFractionDigits: 0
+                            }).format(projection.years10)}
+                        </strong>
                     </div>
                     <div className="stat-box highlight">
                         <span>In 20 Years</span>
-                        <strong>₹{(projection.years20 / 10000000).toFixed(2)} Crores</strong>
+                        <strong>
+                            {/* Logic: If > 1 Crore, show decimals (e.g. ₹1.52 Cr). Else show full number. */}
+                            {projection.years20 > 10000000 
+                                ? `₹${(projection.years20 / 10000000).toFixed(2)} Cr`
+                                : new Intl.NumberFormat('en-IN', {
+                                    style: 'currency',
+                                    currency: 'INR',
+                                    maximumFractionDigits: 0
+                                  }).format(projection.years20)
+                            }
+                        </strong>
                     </div>
                 </div>
             </div>
