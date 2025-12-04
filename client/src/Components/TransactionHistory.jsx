@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaFileDownload, FaHistory } from 'react-icons/fa';
-import DateFilter from './DateFilter'; // Reusing your new component!
-import './Profile.css'; // Reusing profile styles for table
+import DateFilter from './DateFilter';
+import './Profile.css'; 
 
 const TransactionHistory = () => {
-    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-    
-    // State managed here specifically for this page
+    const API_URL = process.env.REACT_APP_API_URL;
     const [viewMode, setViewMode] = useState('all'); 
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
     const [transactions, setTransactions] = useState([]);
@@ -66,7 +64,6 @@ const TransactionHistory = () => {
                 <div className="header-top-row">
                     <h2><FaHistory /> Transaction History</h2>
                     
-                    {/* Reusable Date Component */}
                     <DateFilter 
                         viewMode={viewMode} 
                         setViewMode={setViewMode}
