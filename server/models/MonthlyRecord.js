@@ -1,5 +1,13 @@
 const mongoose = require('mongoose');
 
+const TransactionSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    amount: { type: Number, required: true },
+    category: { type: String, required: true }, 
+    type: { type: String, enum: ['need', 'want'], default: 'want' }, 
+    date: { type: Date, default: Date.now }
+});
+
 const MonthlyRecordSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -21,7 +29,10 @@ const MonthlyRecordSchema = new mongoose.Schema({
         otherExpense: { type: Number, default: 0 }
     },
 
-    // Savings Breakdown
+    transactions: [TransactionSchema],
+    totalNeeds: { type: Number, default: 0 },
+    totalWants: { type: Number, default: 0 },
+
     savings: {
         sip: { type: Number, default: 0 },
         fdRd: { type: Number, default: 0 },

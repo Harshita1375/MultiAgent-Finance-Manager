@@ -4,10 +4,11 @@ import './Profile.css';
 import axios from 'axios';
 
 const Profile = () => {
-    const API_URL = process.env.REACT_APP_API_URL;
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
     
     const currentMonth = new Date().toISOString().slice(0, 7);
     const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+    const [isEditing, setIsEditing] = useState(false);
 
     const [formData, setFormData] = useState({
         netEarnings: '',
@@ -43,6 +44,7 @@ const Profile = () => {
                 });
                 
                 if (res.data && res.data.month) {
+                    setIsEditing(true);
                     const d = res.data;
                     setFormData({
                         netEarnings: d.income || '', 
@@ -54,11 +56,12 @@ const Profile = () => {
                         subscriptions: d.expenses?.subscriptions || '',
                         petrol: d.expenses?.petrol || '',
                         otherExpense: d.expenses?.otherExpense || '',
-                        maritalStatus: formData.maritalStatus, 
-                        hasChildren: formData.hasChildren,
-                        schoolFees: d.expenses?.schoolFees || '', 
+                        
+                        maritalStatus: 'single', 
+                        hasChildren: 'no',
+                        schoolFees: '', 
 
-                        partyBudget: d.expenses?.partyBudget || '',
+                        partyBudget: '',
 
                         sip: d.savings?.sip || '',
                         fdRd: d.savings?.fdRd || '',
@@ -66,12 +69,13 @@ const Profile = () => {
                         notes: d.notes || ''
                     });
                 } else {
-                    setFormData(prev => ({ 
-                        ...prev, 
+                    setIsEditing(false);
+                    setFormData({ 
                         netEarnings: '', emi: '', rent: '', grocery: '', electricity: '', 
                         otherBills: '', subscriptions: '', petrol: '', otherExpense: '', 
+                        maritalStatus: 'single', hasChildren: 'no', schoolFees: '', partyBudget: '',
                         sip: '', fdRd: '', gold: '', notes: '' 
-                    }));
+                    });
                 }
             } catch (err) { 
                 console.error("Error fetching record:", err); 
@@ -118,10 +122,13 @@ const Profile = () => {
                 notes: formData.notes
             };
 
-            const res = await axios.post(`${API_URL}/api/records`, payload, config);
-            
-            alert(`✅ Record saved for ${selectedMonth}!`);
-            console.log("Saved Data:", res.data);
+            if (isEditing) {
+                await axios.put(`${API_URL}/api/records/update`, payload, config);
+                alert(`✅ Record Updated for ${selectedMonth}!`);
+            } else {
+                await axios.post(`${API_URL}/api/records`, payload, config);
+                alert(`✅ Record Created for ${selectedMonth}!`);
+            }
 
         } catch (err) {
             console.error(err);
@@ -268,7 +275,7 @@ const Profile = () => {
                 </div>
 
                 <button type="submit" className="save-btn">
-                    <FaSave /> Save {selectedMonth} Record
+                    <FaSave /> {isEditing ? 'Update Record' : 'Save New Record'}
                 </button>
             </form>
         </div>

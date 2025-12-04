@@ -4,10 +4,14 @@ const auth = require('../middleware/auth');
 const { 
     saveMonthlyRecord, 
     getMonthlyRecord, 
-    getAllHistory 
+    getAllHistory,
+    updateMonthlyRecord, 
+    getSpendingAnalysis
 } = require('../controllers/recordController');
+router.get('/analyze', auth, getSpendingAnalysis);
+router.get('/history', auth, getAllHistory);
+router.put('/update', auth, updateMonthlyRecord); 
 router.post('/', auth, saveMonthlyRecord);
 router.get('/', auth, getMonthlyRecord);
-router.get('/history', auth, getAllHistory);
 
 module.exports = router;

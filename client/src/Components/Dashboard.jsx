@@ -7,6 +7,7 @@ import {
 import './Dashboard.css'; 
 import Profile from './Profile';
 import Analytics from './Analytics';
+import ExpenseAgent from './ExpenseAgent';
 
 const Dashboard = () => {
     const [searchParams] = useSearchParams();
@@ -149,7 +150,7 @@ const Dashboard = () => {
                     )}
                     {activeTab === 'profile' && <Profile userName={user.name} />}
                     {activeTab === 'advisory' && <div className="view-content placeholder-view"><h2>Advisory Agent</h2><p>Coming Soon...</p></div>}
-                    {activeTab === 'expense' && <div className="view-content placeholder-view"><h2>Expense Agent</h2><p>Coming Soon...</p></div>}
+                    {activeTab === 'expense' && <ExpenseAgent/>}
                     {activeTab === 'savings' && <div className="view-content placeholder-view"><h2>Savings Agent</h2><p>Coming Soon...</p></div>}
                     {activeTab === 'notifications' && <div className="view-content placeholder-view"><h2>Notifications</h2><p>No new alerts.</p></div>}
                 </div>
