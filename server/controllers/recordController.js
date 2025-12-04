@@ -70,112 +70,105 @@ exports.updateMonthlyRecord = async (req, res) => {
 const calculateNeeds = (exp) => (exp.rent || 0) + (exp.emi || 0) + (exp.grocery || 0) + (exp.electricity || 0);
 const calculateWants = (exp) => (exp.subscriptions || 0) + (exp.partyBudget || 0) + (exp.otherExpense || 0);
 
+const generateFixedTransactions = (record) => {
+    let fixedList = [];
+    const date = new Date(record.month + "-01"); 
+
+    const mappings = [
+        { key: 'rent', title: 'House Rent (Fixed)', cat: 'Rent/EMI', type: 'need' },
+        { key: 'emi', title: 'EMI Loan (Fixed)', cat: 'Rent/EMI', type: 'need' },
+        { key: 'grocery', title: 'Groceries (Monthly)', cat: 'Groceries', type: 'need' },
+        { key: 'electricity', title: 'Electricity Bill', cat: 'Bills', type: 'need' },
+        { key: 'otherBills', title: 'Mobile/Internet', cat: 'Bills', type: 'need' },
+        { key: 'subscriptions', title: 'Subscriptions', cat: 'Life', type: 'want' },
+        { key: 'petrol', title: 'Fuel/Transport', cat: 'Travel', type: 'need' },
+        { key: 'partyBudget', title: 'Dining/Party Budget', cat: 'Life', type: 'want' },
+        { key: 'schoolFees', title: 'School Fees', cat: 'Education', type: 'need' }
+    ];
+
+    mappings.forEach(map => {
+   
+        let amount = 0;
+        if (record.expenses && record.expenses[map.key]) amount = record.expenses[map.key];
+        if (amount === 0 && record[map.key]) amount = record[map.key]; 
+
+        if (amount > 0) {
+            fixedList.push({
+                _id: `fixed-${record._id}-${map.key}`, 
+                title: map.title,
+                amount: amount,
+                category: map.cat,
+                type: map.type,
+                date: date,
+                isFixed: true 
+            });
+        }
+    });
+
+    return fixedList;
+};
+
 exports.getSpendingAnalysis = async (req, res) => {
     try {
         const { month } = req.query;
         const userId = req.user.id;
 
-        let result = {
-            breakdown: { needs: 0, wants: 0, savings: 0 },
-            limits: { needs: 0, wants: 0, savings: 0 },
-            transactions: [],
-            categories: {}
-        };
-
-        let income = 0;
+        let allRecords = [];
 
         if (month && month !== 'all') {
             const record = await MonthlyRecord.findOne({ user: userId, month });
-            if (record) {
-                const needs = (record.expenses.rent || 0) + (record.expenses.emi || 0) + (record.expenses.electricity || 0) + (record.expenses.grocery || 0);
-                const wants = (record.expenses.subscriptions || 0) + (record.expenses.partyBudget || 0) + (record.expenses.otherExpense || 0); // Add otherExpense to wants
-                
-                const varNeeds = record.transactions.filter(t => t.type === 'need').reduce((a, b) => a + b.amount, 0);
-                const varWants = record.transactions.filter(t => t.type === 'want').reduce((a, b) => a + b.amount, 0);
-
-                result.breakdown.needs = needs + varNeeds;
-                result.breakdown.wants = wants + varWants;
-                result.breakdown.savings = Object.values(record.savings || {}).reduce((a, b) => a + Number(b), 0);
-                
-                result.transactions = record.transactions.reverse();
-                income = record.income || 0;
-
-                result.categories = {
-                    "Rent/EMI": (record.expenses.rent || 0) + (record.expenses.emi || 0),
-                    "Bills": (record.expenses.electricity || 0) + (record.expenses.otherBills || 0),
-                    "Life": record.expenses.subscriptions || 0,
-                };
-                record.transactions.forEach(t => {
-                    result.categories[t.category] = (result.categories[t.category] || 0) + t.amount;
-                });
-            }
+            if (record) allRecords.push(record);
         } else {
-            const agg = await MonthlyRecord.aggregate([
-                { $match: { user: new mongoose.Types.ObjectId(userId) } },
-                {
-                    $group: {
-                        _id: null,
-                        totalIncome: { $sum: "$income" },
-                        
-                        fixRent: { $sum: "$expenses.rent" },
-                        fixEmi: { $sum: "$expenses.emi" },
-                        fixGroc: { $sum: "$expenses.grocery" },
-                        fixElec: { $sum: "$expenses.electricity" },
-                        fixSub: { $sum: "$expenses.subscriptions" },
-                        fixParty: { $sum: "$expenses.partyBudget" },
-                        
-                        totalSavings: { $sum: { $add: ["$savings.sip", "$savings.fdRd", "$savings.gold"] } },
-                        
-                        allTrans: { $push: "$transactions" }
-                    }
-                },
-                {
-                    $project: {
-                        totalIncome: 1,
-                        fixNeeds: { $add: ["$fixRent", "$fixEmi", "$fixGroc", "$fixElec"] },
-                        fixWants: { $add: ["$fixSub", "$fixParty"] },
-                        totalSavings: 1,
-                        flatTrans: { $reduce: { input: "$allTrans", initialValue: [], in: { $concatArrays: ["$$value", "$$this"] } } }
-                    }
-                }
-            ]);
-
-            if (agg.length > 0) {
-                const r = agg[0];
-                income = r.totalIncome;
-                
-                const varNeeds = r.flatTrans.filter(t => t.type === 'need').reduce((a, b) => a + b.amount, 0);
-                const varWants = r.flatTrans.filter(t => t.type === 'want').reduce((a, b) => a + b.amount, 0);
-
-                result.breakdown.needs = r.fixNeeds + varNeeds;
-                result.breakdown.wants = r.fixWants + varWants;
-                result.breakdown.savings = r.totalSavings;
-                
-                result.transactions = r.flatTrans.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-                result.categories = {};
-                r.flatTrans.forEach(t => {
-                    result.categories[t.category] = (result.categories[t.category] || 0) + t.amount;
-                });
-            }
+            allRecords = await MonthlyRecord.find({ user: userId }).sort({ month: -1 });
         }
 
-        result.limits = {
-            needs: income * 0.5,
-            wants: income * 0.3,
-            savings: income * 0.2
+        let combinedTransactions = [];
+        let totalIncome = 0;
+        let totalNeeds = 0;
+        let totalWants = 0;
+        let totalSavings = 0;
+        let categoryMap = {};
+
+        allRecords.forEach(record => {
+            totalIncome += (record.income || 0);
+
+            const realTrans = record.transactions || [];
+            combinedTransactions.push(...realTrans);
+            const fixedTrans = generateFixedTransactions(record);
+            combinedTransactions.push(...fixedTrans);
+            totalSavings += Object.values(record.savings || {}).reduce((a, b) => a + Number(b), 0);
+        });
+
+        combinedTransactions.forEach(t => {
+            if (t.type === 'need') totalNeeds += t.amount;
+            if (t.type === 'want') totalWants += t.amount;
+            categoryMap[t.category] = (categoryMap[t.category] || 0) + t.amount;
+        });
+
+        combinedTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const limits = {
+            needs: totalIncome * 0.5,
+            wants: totalIncome * 0.3,
+            savings: totalIncome * 0.2
         };
 
         let alerts = [];
-        if (result.breakdown.needs > result.limits.needs && income > 0) 
-            alerts.push({ type: 'warning', msg: `Needs exceeded 50% limit by ₹${(result.breakdown.needs - result.limits.needs).toFixed(0)}.` });
-        if (result.breakdown.wants > result.limits.wants && income > 0) 
-            alerts.push({ type: 'danger', msg: `Wants exceeded 30% limit by ₹${(result.breakdown.wants - result.limits.wants).toFixed(0)}.` });
+        if (totalNeeds > limits.needs && totalIncome > 0) 
+            alerts.push({ type: 'warning', msg: `Needs exceeded 50% target by ₹${(totalNeeds - limits.needs).toFixed(0)}` });
+        if (totalWants > limits.wants && totalIncome > 0) 
+            alerts.push({ type: 'danger', msg: `Wants exceeded 30% target by ₹${(totalWants - limits.wants).toFixed(0)}` });
 
-        res.json({ ...result, alerts });
+        res.json({
+            breakdown: { needs: totalNeeds, wants: totalWants, savings: totalSavings },
+            limits,
+            alerts,
+            transactions: combinedTransactions, 
+            categories: categoryMap
+        });
 
     } catch (err) {
-        console.error(err);
+        console.error("Analysis Error:", err);
         res.status(500).send('Server Error');
     }
 };

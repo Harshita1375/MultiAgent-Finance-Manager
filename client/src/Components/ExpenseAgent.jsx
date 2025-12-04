@@ -8,6 +8,7 @@ const ExpenseAgent = () => {
     const [analysis, setAnalysis] = useState(null);
     const [loading, setLoading] = useState(true);
     
+    // VIEW STATE (Default to current month)
     const [viewMode, setViewMode] = useState('month'); 
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
 
@@ -16,6 +17,8 @@ const ExpenseAgent = () => {
     const fetchAnalysis = async () => {
         setLoading(true);
         const token = localStorage.getItem('token');
+        
+        // Decide what to send to backend
         const queryParam = viewMode === 'all' ? 'all' : selectedMonth;
 
         try {
@@ -30,18 +33,23 @@ const ExpenseAgent = () => {
         }
     };
 
+    // Refetch whenever the user toggles the view or changes the date
     useEffect(() => { fetchAnalysis(); }, [viewMode, selectedMonth]);
 
     if (loading) return <div className="agent-loading">🕵️ Agent is analyzing data...</div>;
+    
+    // Safety check for empty data
     if (!analysis) return <div className="agent-empty">No data found.</div>;
 
+    // Destructure data (with defaults to prevent crashes)
     const { breakdown = {}, limits = {}, alerts = [], transactions = [], categories = {} } = analysis;
 
+    // Prepare Chart Data
     const chartData = {
         labels: Object.keys(categories),
         datasets: [{
             data: Object.values(categories),
-            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1'],
             borderWidth: 0
         }]
     };
@@ -49,6 +57,7 @@ const ExpenseAgent = () => {
     return (
         <div className="agent-container">
             
+            {/* HEADER ROW WITH CONTROLS */}
             <div className="agent-header-row">
                 <div className="agent-title-block">
                     <FaShieldAlt className="agent-icon-main" />
@@ -58,6 +67,7 @@ const ExpenseAgent = () => {
                     </div>
                 </div>
 
+                {/* TOGGLE BUTTONS */}
                 <div className="view-controls">
                     <button 
                         className={`view-btn ${viewMode === 'all' ? 'active' : ''}`} 
@@ -71,6 +81,8 @@ const ExpenseAgent = () => {
                     >
                         <FaCalendarAlt /> Month
                     </button>
+                    
+                    {/* Show Date Picker ONLY if 'Month' is selected */}
                     {viewMode === 'month' && (
                         <input 
                             type="month" 
@@ -82,6 +94,7 @@ const ExpenseAgent = () => {
                 </div>
             </div>
 
+            {/* ALERTS SECTION */}
             <div className="agent-alerts">
                 {alerts.length > 0 ? alerts.map((alert, idx) => (
                     <div key={idx} className={`alert-card ${alert.type}`}>
@@ -92,7 +105,10 @@ const ExpenseAgent = () => {
                 )}
             </div>
 
+            {/* VISUALS GRID */}
             <div className="visuals-grid">
+                
+                {/* LIMIT TRACKER */}
                 <div className="limits-card">
                     <h3><FaList /> Limit Tracker</h3>
                     
@@ -119,6 +135,7 @@ const ExpenseAgent = () => {
                     </div>
                 </div>
 
+                {/* PIE CHART */}
                 <div className="chart-card-mini">
                     <h3><FaChartPie /> Category Split</h3>
                     <div className="doughnut-wrapper">
@@ -127,9 +144,13 @@ const ExpenseAgent = () => {
                 </div>
             </div>
 
+            {/* --- TRANSACTION TABLE --- */}
             <div className="table-section">
-                <h3>📜 {viewMode === 'all' ? 'All Transactions' : 'Monthly Transactions'}</h3>
-                {transactions.length > 0 ? (
+                <h3>
+                    📜 {viewMode === 'all' ? 'All Transactions (History)' : 'Monthly Transactions'}
+                </h3>
+                
+                {transactions && transactions.length > 0 ? (
                     <table className="expense-table">
                         <thead>
                             <tr>
@@ -143,16 +164,23 @@ const ExpenseAgent = () => {
                         <tbody>
                             {transactions.map((t, index) => (
                                 <tr key={index}>
+                                    {/* Format Date nicely */}
                                     <td>{new Date(t.date).toLocaleDateString()}</td>
                                     <td>{t.title}</td>
                                     <td><span className="badge-cat">{t.category}</span></td>
-                                    <td><span className={`badge-type ${t.type}`}>{t.type}</span></td>
+                                    <td>
+                                        <span className={`badge-type ${t.type}`}>
+                                            {t.type ? t.type.toUpperCase() : 'EXPENSE'}
+                                        </span>
+                                    </td>
                                     <td className="amount-col">₹{t.amount}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-                ) : <p className="no-trans">No expenses logged.</p>}
+                ) : (
+                    <p className="no-trans">No variable expenses found for this period.</p>
+                )}
             </div>
         </div>
     );
