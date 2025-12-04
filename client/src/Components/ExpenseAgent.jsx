@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaShieldAlt, FaExclamationTriangle, FaCheckCircle, FaList, FaChartPie, FaLayerGroup, FaCalendarAlt, FaTrash } from 'react-icons/fa';
+import { FaShieldAlt, FaExclamationTriangle, FaCheckCircle, FaList, FaChartPie, FaRedo, FaLightbulb, FaExclamationCircle, FaTrophy, FaChartLine } from 'react-icons/fa';
 import { Doughnut } from 'react-chartjs-2';
+import DateFilter from './DateFilter'; 
 import './ExpenseAgent.css';
 
 const ExpenseAgent = () => {
     const [analysis, setAnalysis] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [viewMode, setViewMode] = useState('month'); 
+        const [viewMode, setViewMode] = useState('month'); 
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
     const [customLimits, setCustomLimits] = useState({ needs: 50, wants: 30 }); 
 
-    const API_URL = process.env.REACT_APP_API_URL;
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
     const fetchAnalysis = async () => {
         setLoading(true);
@@ -35,6 +36,13 @@ const ExpenseAgent = () => {
     const handleLimitChange = (e) => {
         const { name, value } = e.target;
         setCustomLimits(prev => ({ ...prev, [name]: parseInt(value) }));
+    };
+
+    const getAlertIcon = (type) => {
+        if (type === 'danger') return <FaExclamationCircle />;
+        if (type === 'warning') return <FaLightbulb />;
+        if (type === 'success') return <FaTrophy />;
+        return <FaChartLine />;
     };
 
     if (loading) return <div className="agent-loading">🕵️ Agent is analyzing data...</div>;
@@ -69,43 +77,29 @@ const ExpenseAgent = () => {
                 </div>
 
                 <div className="view-controls">
-                    <button 
-                        className={`view-btn ${viewMode === 'all' ? 'active' : ''}`} 
-                        onClick={() => setViewMode('all')}
-                    >
-                        <FaLayerGroup /> All-Time
-                    </button>
-                    <button 
-                        className={`view-btn ${viewMode === 'month' ? 'active' : ''}`} 
-                        onClick={() => setViewMode('month')}
-                    >
-                        <FaCalendarAlt /> Month
-                    </button>
-                    {viewMode === 'month' && (
-                        <input 
-                            type="month" 
-                            className="month-picker-small"
-                            value={selectedMonth}
-                            onChange={(e) => setSelectedMonth(e.target.value)}
-                        />
-                    )}
+
+                    <DateFilter 
+                        viewMode={viewMode} 
+                        setViewMode={setViewMode}
+                        selectedMonth={selectedMonth}
+                        setSelectedMonth={setSelectedMonth}
+                    />
                 </div>
             </div>
 
-            <div className="agent-alerts">
-                {breakdown.needs > dynamicLimits.needs && (
-                    <div className="alert-card warning">
-                        <FaExclamationTriangle /> <span>Needs exceeded {customLimits.needs}% limit.</span>
-                    </div>
-                )}
-                {breakdown.wants > dynamicLimits.wants && (
-                    <div className="alert-card danger">
-                        <FaExclamationTriangle /> <span>Wants exceeded {customLimits.wants}% limit.</span>
-                    </div>
-                )}
-                {breakdown.needs <= dynamicLimits.needs && breakdown.wants <= dynamicLimits.wants && (
-                    <div className="alert-card success"><FaCheckCircle /> <span>Spending is within your custom limits.</span></div>
-                )}
+            <div className="ai-feedback-section">
+                <h3>🤖 AI Spending Feedback</h3>
+                <div className="feedback-grid">
+                    {analysis.alerts && analysis.alerts.map((alert, idx) => (
+                        <div key={idx} className={`feedback-card ${alert.type}`}>
+                            <div className="feedback-icon">{getAlertIcon(alert.type)}</div>
+                            <div className="feedback-content">
+                                <h4>{alert.title}</h4>
+                                <p>{alert.msg}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
 
             <div className="visuals-grid">
@@ -115,45 +109,25 @@ const ExpenseAgent = () => {
                     <div className="slider-container">
                         <label>Needs Limit: {customLimits.needs}%</label>
                         <input 
-                            type="range" 
-                            name="needs" 
-                            min="10" max="80" 
-                            value={customLimits.needs} 
-                            onChange={handleLimitChange} 
-                            className="slider"
+                            type="range" name="needs" min="10" max="80" 
+                            value={customLimits.needs} onChange={handleLimitChange} className="slider"
                         />
                     </div>
                     <div className="limit-row">
-                        <div className="limit-label">
-                            <span>Actual Needs</span>
-                            <small>₹{breakdown.needs || 0} / ₹{dynamicLimits.needs.toFixed(0)}</small>
-                        </div>
-                        <div className="progress-bg">
-                            <div className="progress-fill fill-needs" 
-                                 style={{width: `${Math.min(((breakdown.needs || 0) / (dynamicLimits.needs || 1))*100, 100)}%`}}></div>
-                        </div>
+                        <div className="limit-label"><span>Actual Needs</span><small>₹{breakdown.needs || 0} / ₹{dynamicLimits.needs.toFixed(0)}</small></div>
+                        <div className="progress-bg"><div className="progress-fill fill-needs" style={{width: `${Math.min(((breakdown.needs)/(dynamicLimits.needs||1))*100, 100)}%`}}></div></div>
                     </div>
 
                     <div className="slider-container">
                         <label>Wants Limit: {customLimits.wants}%</label>
                         <input 
-                            type="range" 
-                            name="wants" 
-                            min="5" max="50" 
-                            value={customLimits.wants} 
-                            onChange={handleLimitChange} 
-                            className="slider"
+                            type="range" name="wants" min="5" max="50" 
+                            value={customLimits.wants} onChange={handleLimitChange} className="slider"
                         />
                     </div>
                     <div className="limit-row">
-                        <div className="limit-label">
-                            <span>Actual Wants</span>
-                            <small>₹{breakdown.wants || 0} / ₹{dynamicLimits.wants.toFixed(0)}</small>
-                        </div>
-                        <div className="progress-bg">
-                            <div className="progress-fill fill-wants" 
-                                 style={{width: `${Math.min(((breakdown.wants || 0) / (dynamicLimits.wants || 1))*100, 100)}%`}}></div>
-                        </div>
+                        <div className="limit-label"><span>Actual Wants</span><small>₹{breakdown.wants || 0} / ₹{dynamicLimits.wants.toFixed(0)}</small></div>
+                        <div className="progress-bg"><div className="progress-fill fill-wants" style={{width: `${Math.min(((breakdown.wants)/(dynamicLimits.wants||1))*100, 100)}%`}}></div></div>
                     </div>
                 </div>
 
@@ -166,40 +140,25 @@ const ExpenseAgent = () => {
             </div>
 
             <div className="table-section">
-                <h3>
-                    📜 {viewMode === 'all' ? 'All Transactions (History)' : 'Monthly Transactions'}
-                </h3>
-                
+                <h3>📜 {viewMode === 'all' ? 'All Transactions (History)' : 'Monthly Transactions'}</h3>
                 {transactions && transactions.length > 0 ? (
                     <table className="expense-table">
                         <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Item</th>
-                                <th>Category</th>
-                                <th>Type</th>
-                                <th>Amount</th>
-                            </tr>
+                            <tr><th>Date</th><th>Item</th><th>Category</th><th>Type</th><th>Amount</th></tr>
                         </thead>
                         <tbody>
                             {transactions.map((t, index) => (
                                 <tr key={index}>
                                     <td>{new Date(t.date).toLocaleDateString()}</td>
-                                    <td>{t.title}</td>
+                                    <td>{t.title} {t.isFixed && <span className="fixed-tag">(Fixed)</span>}</td>
                                     <td><span className="badge-cat">{t.category}</span></td>
-                                    <td>
-                                        <span className={`badge-type ${t.type}`}>
-                                            {t.type ? t.type.toUpperCase() : 'EXPENSE'}
-                                        </span>
-                                    </td>
+                                    <td><span className={`badge-type ${t.type}`}>{t.type ? t.type.toUpperCase() : 'EXPENSE'}</span></td>
                                     <td className="amount-col">₹{t.amount}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-                ) : (
-                    <p className="no-trans">No expenses found for this period.</p>
-                )}
+                ) : <p className="no-trans">No expenses found for this period.</p>}
             </div>
         </div>
     );
