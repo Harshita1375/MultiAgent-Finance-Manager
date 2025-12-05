@@ -22,9 +22,14 @@ const SidebarBadge = () => {
 
     useEffect(() => {
         fetchUnreadCount();
-        // Poll every 1 minute to keep badge updated
-        const interval = setInterval(fetchUnreadCount, 60000); 
-        return () => clearInterval(interval);
+        const interval = setInterval(fetchUnreadCount, 5000); 
+        const handleUpdate = () => fetchUnreadCount();
+        window.addEventListener('notificationUpdate', handleUpdate);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('notificationUpdate', handleUpdate);
+        };
     }, []);
 
     if (count === 0) return null;

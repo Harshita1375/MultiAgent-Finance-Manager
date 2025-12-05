@@ -14,16 +14,14 @@ const notificationExists = async (userId, title) => {
         });
         return !!exists;
     } catch (error) {
-        console.error("Check Exists Error:", error);
+        console.error(error);
         return false;
     }
 };
 
-// Add this helper at the top if not present
 const getDailyAverage = (manualExpenses) => {
     if (manualExpenses.length === 0) return 0;
     const total = manualExpenses.reduce((sum, e) => sum + e.amount, 0);
-    // Rough estimate: divide total by day of month (e.g., total / 15th)
     return total / (new Date().getDate() || 1);
 };
 
@@ -34,7 +32,6 @@ exports.generateNotifications = async (req, res) => {
         const today = new Date();
         const dayOfMonth = today.getDate();
 
-        // 1. Fetch Basic Data
         const record = await MonthlyRecord.findOne({ user: userId, month: currentMonthStr });
         const [year, month] = currentMonthStr.split('-');
         const startDate = new Date(year, month - 1, 1);
@@ -42,14 +39,62 @@ exports.generateNotifications = async (req, res) => {
         const manualExpenses = await Expense.find({ user: userId, date: { $gte: startDate, $lte: endDate } });
 
         const income = Number(record?.income) || 0;
+        if (income === 0) return res.json([]);
+
+        const expenses = record.expenses || {};
+        const fixedNeeds = (Number(expenses.rent) || 0) + (Number(expenses.emi) || 0) + 
+                           (Number(expenses.grocery) || 0) + (Number(expenses.electricity) || 0);
+        
+        let variableNeeds = 0;
+        let variableWants = 0;
+        
+        manualExpenses.forEach(exp => {
+            const isNeed = ['Groceries', 'Fuel', 'Medical', 'Bills', 'Rent/EMI', 'Education'].includes(exp.category);
+            if (exp.type === 'need' || isNeed) {
+                variableNeeds += Number(exp.amount) || 0;
+            } else {
+                variableWants += Number(exp.amount) || 0;
+            }
+        });
+
+        const totalNeeds = fixedNeeds + variableNeeds;
+        const totalWants = variableWants + (Number(expenses.subscriptions) || 0) + (Number(expenses.partyBudget) || 0);
+        
+        const savings = record.savings || {};
+        const totalSavings = (Number(savings.sip) || 0) + (Number(savings.fdRd) || 0) + (Number(savings.gold) || 0);
+
         const alerts = [];
 
-        // ... [Keep your existing Needs/Wants/Savings logic here] ...
+        if (totalNeeds > (income * 0.6)) {
+            if (!await notificationExists(userId, 'High Fixed Costs')) {
+                alerts.push({
+                    title: 'High Fixed Costs',
+                    message: `⚠️ Your 'Needs' are at ${Math.round((totalNeeds/income)*100)}% of income.`,
+                    type: 'warning'
+                });
+            }
+        }
 
-        // --- NEW LOGIC START ---
+        if (totalWants > (income * 0.3)) {
+            if (!await notificationExists(userId, 'Overspending Alert')) {
+                alerts.push({
+                    title: 'Overspending Alert',
+                    message: `🚨 You have crossed the 30% limit on Lifestyle expenses.`,
+                    type: 'danger'
+                });
+            }
+        }
 
-        // 1. 📈 Spending Spike Alert
-        // If you spent more today than 2x your daily average
+        if (dayOfMonth > 15 && totalSavings < (income * 0.1)) {
+            if (!await notificationExists(userId, 'Savings Lagging')) {
+                alerts.push({
+                    title: 'Savings Lagging',
+                    message: `📉 It's mid-month and you've saved less than 10%.`,
+                    type: 'info'
+                });
+            }
+        }
+
         const dailyAvg = getDailyAverage(manualExpenses);
         const startOfToday = new Date(new Date().setHours(0,0,0,0));
         const spentToday = manualExpenses
@@ -66,8 +111,6 @@ exports.generateNotifications = async (req, res) => {
             }
         }
 
-        // 2. 🗓️ Subscription Reminder (Simulated for 1st-5th of month)
-        // Checks if you have a "subscriptions" budget set in profile
         if (record?.expenses?.subscriptions > 0 && dayOfMonth <= 7) {
             if (!await notificationExists(userId, 'Subscription Reminder')) {
                 alerts.push({
@@ -78,8 +121,6 @@ exports.generateNotifications = async (req, res) => {
             }
         }
 
-        // 3. 🏆 "No Spend Day" Achievement
-        // If it's late in the day (e.g., after 8 PM) and spentToday is 0
         if (today.getHours() > 20 && spentToday === 0) {
             if (!await notificationExists(userId, 'No Spend Day')) {
                 alerts.push({
@@ -89,10 +130,22 @@ exports.generateNotifications = async (req, res) => {
                 });
             }
         }
-        
-        // --- NEW LOGIC END ---
 
-        // Save Alerts
+        const totalFixed = fixedNeeds; 
+        const totalAllocated = totalSavings;
+        const buffer = income * 0.1;
+        const freeCash = Math.max(0, income - totalFixed - totalAllocated - buffer);
+
+        if (freeCash > 5000) {
+            if (!await notificationExists(userId, 'Investment Opportunity')) {
+                alerts.push({
+                    title: 'Investment Opportunity',
+                    message: `💰 You have ₹${Math.round(freeCash).toLocaleString()} in free cash! The Saving Agent has found new trading plans for you.`,
+                    type: 'success'
+                });
+            }
+        }
+
         for (let alert of alerts) {
             await Notification.create({ user: userId, ...alert });
         }
