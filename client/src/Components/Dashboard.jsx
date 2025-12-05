@@ -12,6 +12,7 @@ import TransactionHistory from './TransactionHistory';
 import SavingAgent from './SavingAgent';
 import Notification from './Notification';
 import SidebarBadge from './SidebarBadge';
+import AdvisoryAgent from './AdvisoryAgent';
 import WalletWidget from './WalletWidget';
 
 const Dashboard = () => {
@@ -194,7 +195,7 @@ const Dashboard = () => {
                     {activeTab === 'profile-history' && <TransactionHistory />}
                     
                     {/* AGENTS */}
-                    {activeTab === 'advisory' && <div className="view-content placeholder-view"><h2>Advisory Agent</h2><p>Coming Soon...</p></div>}
+                    {activeTab === 'advisory' && <AdvisoryAgent/>}
                     {activeTab === 'expense' && <ExpenseAgent />}
                     {activeTab === 'savings' && <SavingAgent />}
                     {activeTab === 'notifications' && <Notification />}
