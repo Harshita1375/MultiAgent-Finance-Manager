@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaFileDownload, FaHistory } from 'react-icons/fa';
+import { FaFileDownload, FaHistory, FaWallet, FaReceipt, FaTrash } from 'react-icons/fa';
 import DateFilter from './DateFilter';
-import './Profile.css'; 
+import './TransactionHistory.css';
 
 const TransactionHistory = () => {
-    const API_URL = process.env.REACT_APP_API_URL;
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
     const [viewMode, setViewMode] = useState('all'); 
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
     const [transactions, setTransactions] = useState([]);
@@ -15,13 +15,15 @@ const TransactionHistory = () => {
         const fetchHistory = async () => {
             setLoading(true);
             const token = localStorage.getItem('token');
+            // Assuming your backend handles 'all' or specific month
             const queryParam = viewMode === 'all' ? 'all' : selectedMonth;
             
             try {
-                // Using existing analyze endpoint which returns a combined list
+                // Fetch merged data (Fixed + Manual + Wallet)
                 const res = await axios.get(`${API_URL}/api/records/analyze?month=${queryParam}`, {
                     headers: { 'x-auth-token': token }
                 });
+                
                 if (res.data && res.data.transactions) {
                     setTransactions(res.data.transactions);
                 } else {
@@ -83,18 +85,49 @@ const TransactionHistory = () => {
                 {loading ? <p className="no-data-cell">Loading...</p> : (
                     <table className="history-table">
                         <thead>
-                            <tr><th>Date</th><th>Title</th><th>Category</th><th>Type</th><th>Amount</th></tr>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                            </tr>
                         </thead>
                         <tbody>
-                            {transactions.length > 0 ? transactions.map((t, idx) => (
-                                <tr key={idx}>
-                                    <td>{new Date(t.date).toLocaleDateString()}</td>
-                                    <td>{t.title}</td>
-                                    <td><span className="badge-cat">{t.category}</span></td>
-                                    <td><span className={`badge-type ${t.type}`}>{t.type ? t.type.toUpperCase() : 'MISC'}</span></td>
-                                    <td className="amount-col">₹{t.amount}</td>
+                            {transactions.length > 0 ? transactions.map((t, idx) => {
+                                // --- WALLET DETECTION LOGIC ---
+                                const isWallet = t.title.startsWith('Wallet:') || t.title.startsWith('Quick:');
+                                // Remove the prefix for cleaner display
+                                const cleanTitle = t.title.replace('Wallet:', '').replace('Quick:', '').trim();
+
+                                return (
+                                    <tr key={idx}>
+                                        <td className="date-cell">{new Date(t.date).toLocaleDateString()}</td>
+                                        <td>
+                                            <div className="t-name-wrapper">
+                                                {/* Show Blue Wallet Icon or Grey Receipt Icon */}
+                                                {isWallet ? (
+                                                    <FaWallet className="icon-wallet" title="Paid via Wallet" />
+                                                ) : (
+                                                    <FaReceipt className="icon-std" />
+                                                )}
+                                                <span className={isWallet ? 'wallet-text' : ''}>{cleanTitle}</span>
+                                            </div>
+                                        </td>
+                                        <td><span className="badge-cat">{t.category}</span></td>
+                                        <td>
+                                            <span className={`badge-type ${t.type || 'want'}`}>
+                                                {t.type ? t.type.toUpperCase() : 'EXPENSE'}
+                                            </span>
+                                        </td>
+                                        <td className="amount-col">₹{t.amount.toLocaleString()}</td>
+                                    </tr>
+                                );
+                            }) : (
+                                <tr>
+                                    <td colSpan="5" className="no-data-cell">No transactions found for this period.</td>
                                 </tr>
-                            )) : <tr><td colSpan="5" className="no-data-cell">No transactions found for this period.</td></tr>}
+                            )}
                         </tbody>
                     </table>
                 )}

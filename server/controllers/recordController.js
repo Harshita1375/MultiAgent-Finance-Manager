@@ -1,8 +1,16 @@
 const MonthlyRecord = require('../models/MonthlyRecord');
+const Expense = require('../models/Expense'); 
 const mongoose = require('mongoose');
+
+const getCategoryType = (category) => {
+    const needs = ['Groceries', 'Rent/EMI', 'Bills', 'Education', 'Medical', 'Fuel', 'Travel'];
+    return needs.includes(category) ? 'need' : 'want';
+};
 
 const generateFixedTransactions = (record) => {
     let fixedList = [];
+    if (!record.month) return fixedList;
+    
     const date = new Date(record.month + "-01"); 
 
     const mappings = [
@@ -96,14 +104,31 @@ exports.getSpendingAnalysis = async (req, res) => {
         const { month } = req.query;
         const userId = req.user.id;
 
-        let allRecords = [];
+        let monthlyRecords = [];
+        let recordQuery = { user: userId };
+        
+        if (month && month !== 'all') {
+            recordQuery.month = month;
+            const record = await MonthlyRecord.findOne(recordQuery);
+            if (record) monthlyRecords.push(record);
+        } else {
+            monthlyRecords = await MonthlyRecord.find(recordQuery).sort({ month: -1 });
+        }
+
+        let manualExpenses = [];
+        let expenseQuery = { user: userId };
 
         if (month && month !== 'all') {
-            const record = await MonthlyRecord.findOne({ user: userId, month });
-            if (record) allRecords.push(record);
-        } else {
-            allRecords = await MonthlyRecord.find({ user: userId }).sort({ month: -1 });
+            const [year, monthNum] = month.split('-');
+            const startDate = new Date(year, monthNum - 1, 1);
+            const endDate = new Date(year, monthNum, 0, 23, 59, 59); 
+            
+            expenseQuery.date = { 
+                $gte: startDate, 
+                $lte: endDate 
+            };
         }
+        manualExpenses = await Expense.find(expenseQuery).sort({ date: -1 });
 
         let combinedTransactions = [];
         let totalIncome = 0;
@@ -113,25 +138,34 @@ exports.getSpendingAnalysis = async (req, res) => {
         let categoryMap = {};
         let highestWantCategory = { name: '', amount: 0 };
 
-        allRecords.forEach(record => {
+        monthlyRecords.forEach(record => {
             totalIncome += (Number(record.income) || 0);
-
-            if (record.transactions) {
-                combinedTransactions.push(...record.transactions);
-            }
-
+            
             const fixedTrans = generateFixedTransactions(record);
             combinedTransactions.push(...fixedTrans);
 
             totalSavings += Object.values(record.savings || {}).reduce((a, b) => a + Number(b), 0);
         });
 
+        manualExpenses.forEach(exp => {
+            const type = exp.type || getCategoryType(exp.category); 
+            
+            combinedTransactions.push({
+                _id: exp._id,
+                title: exp.title,
+                amount: Number(exp.amount),
+                category: exp.category,
+                type: type,
+                date: exp.date,
+                isFixed: false
+            });
+        });
+
+        // 4. Calculate Totals & Analysis
         combinedTransactions.forEach(t => {
             if (t.type === 'need') totalNeeds += t.amount;
             if (t.type === 'want') {
                 totalWants += t.amount;
-                if (t.category !== 'Rent/EMI' && t.category !== 'Bills') {
-                }
             }
 
             categoryMap[t.category] = (categoryMap[t.category] || 0) + t.amount;
@@ -141,6 +175,7 @@ exports.getSpendingAnalysis = async (req, res) => {
             }
         });
 
+        // Sort by Date (Descending)
         combinedTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         const limits = {
@@ -151,12 +186,13 @@ exports.getSpendingAnalysis = async (req, res) => {
 
         let feedback = [];
         const date = new Date();
-        const currentDay = date.getDate();
-        const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-        const monthProgress = currentDay / daysInMonth; 
+        const isCurrentMonth = month === new Date().toISOString().slice(0, 7);
 
-        const currentMonthStr = new Date().toISOString().slice(0, 7);
-        if (month === currentMonthStr) {
+        if (isCurrentMonth) {
+            const currentDay = date.getDate();
+            const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+            const monthProgress = currentDay / daysInMonth; 
+
             const projectedWants = totalWants / (monthProgress || 1); 
             if (projectedWants > limits.wants) {
                 feedback.push({

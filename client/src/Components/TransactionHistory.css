@@ -1,0 +1,107 @@
+/* Table Layout */
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.history-table th {
+    text-align: left;
+    padding: 12px 15px;
+    background-color: #f9fafb;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.history-table td {
+    padding: 14px 15px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+
+/* Transaction Name Column */
+.t-name-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.icon-wallet {
+    color: #3b82f6; /* Bright Blue for Wallet */
+    font-size: 1.1rem;
+}
+
+.icon-std {
+    color: #9ca3af; /* Grey for Manual/Fixed */
+    font-size: 1rem;
+}
+
+.wallet-text {
+    font-weight: 500;
+    color: #1f2937;
+}
+
+/* Badges */
+.badge-cat {
+    background-color: #f3f4f6;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: #4b5563;
+}
+
+.badge-type {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.badge-type.need {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.badge-type.want {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.amount-col {
+    font-weight: 600;
+    color: #111827;
+    font-family: 'Courier New', monospace; /* Monospace for alignment */
+}
+
+/* Button */
+/* Update this class in Profile.css or TransactionHistory.css */
+
+.download-btn {
+    background-color: #2563eb; /* Primary Blue */
+    color: #ffffff; /* White Text */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.download-btn:hover {
+    background-color: #1d4ed8; /* Darker Blue on Hover */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+}
+
+.download-btn svg {
+    font-size: 1rem;
+}

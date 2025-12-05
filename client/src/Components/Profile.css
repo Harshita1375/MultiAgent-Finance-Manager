@@ -211,33 +211,6 @@
     overflow: hidden;
 }
 
-.history-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.95rem;
-}
-
-.history-table th {
-    background: #f8fafc;
-    color: #475569;
-    font-weight: 600;
-    text-align: left;
-    padding: 15px;
-    border-bottom: 2px solid #e2e8f0;
-}
-
-.history-table td {
-    padding: 15px;
-    border-bottom: 1px solid #f1f5f9;
-    color: #334155;
-}
-
-.no-data-cell {
-    text-align: center;
-    padding: 30px;
-    color: #94a3b8;
-    font-style: italic;
-}
 
 /* --- SETTINGS PLACEHOLDER --- */
 .settings-section {
