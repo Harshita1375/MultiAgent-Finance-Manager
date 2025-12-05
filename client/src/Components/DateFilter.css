@@ -44,3 +44,24 @@
     outline: none;
     font-size: 0.85rem;
 }
+
+
+.wallet-page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh; 
+    animation: fadeIn 0.3s ease-in;
+}
+
+.wallet-nav-btn {
+    margin-top: 5px;
+    margin-bottom: 15px; 
+    color: #eab308 !important;
+    font-weight: 600;
+}
+
+.wallet-nav-btn.active {
+    background-color: rgba(234, 179, 8, 0.1) !important;
+    border-right: 3px solid #eab308;
+}

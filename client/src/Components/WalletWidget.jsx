@@ -3,7 +3,7 @@ import axios from 'axios';
 import { FaWallet, FaShoppingBag, FaFilm, FaHamburger, FaBolt, FaPlus, FaCog } from 'react-icons/fa';
 import './WalletWidget.css';
 
-const WalletWidget = () => {
+const WalletWidget = ({ onSetupComplete }) => {
     const [balance, setBalance] = useState(null); 
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState('Food');
@@ -34,7 +34,7 @@ const WalletWidget = () => {
             console.error("Wallet Fetch Error:", err);
         }
     };
-
+    
     const handleSetup = async () => {
         if (!setupLimit) return;
         const token = localStorage.getItem('token');
@@ -45,6 +45,10 @@ const WalletWidget = () => {
             }, { headers: { 'x-auth-token': token } });
             
             fetchWalletData(); 
+            
+            // 2. Call the prop to notify Dashboard
+            if(onSetupComplete) onSetupComplete(); 
+
         } catch (err) {
             alert("Setup Failed");
         }

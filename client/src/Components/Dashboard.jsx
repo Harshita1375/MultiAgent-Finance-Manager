@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { 
-    FaHistory, FaCog, FaHome, FaUser, FaRobot, FaWallet, FaPiggyBank, FaBell, FaBars, FaSignOutAlt, FaUserCircle, FaLayerGroup, FaCalendarAlt, FaUserEdit, FaChevronDown, FaChevronUp 
+    FaHistory, FaCog, FaHome, FaUser, FaRobot, FaWallet, FaPiggyBank, FaBell, FaBars, FaSignOutAlt, FaUserCircle, FaLayerGroup, FaCalendarAlt, FaUserEdit, FaChevronDown, FaChevronUp, FaPlusCircle, FaslidersH 
 } from 'react-icons/fa';
 import './Dashboard.css'; 
 import Profile from './Profile';
@@ -22,11 +22,13 @@ const Dashboard = () => {
     const [activeTab, setActiveTab] = useState('overview'); 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isProfileExpanded, setIsProfileExpanded] = useState(false); 
+    
+    const [hasWallet, setHasWallet] = useState(false);
 
     const [viewMode, setViewMode] = useState('all'); 
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
 
-    const API_URL = process.env.REACT_APP_API_URL;
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
     useEffect(() => {
         const googleToken = searchParams.get('token');
@@ -40,6 +42,7 @@ const Dashboard = () => {
             navigate('/'); 
         } else {
             fetchUserProfile(token);
+            checkWalletStatus(token); 
         }
     }, [searchParams, navigate]);
 
@@ -50,6 +53,23 @@ const Dashboard = () => {
             });
             if (res.data) setUser({ name: res.data.username });
         } catch (err) { console.error(err); }
+    };
+
+    const checkWalletStatus = async (token) => {
+        try {
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const res = await axios.get(`${API_URL}/api/records?month=${currentMonth}`, {
+                headers: { 'x-auth-token': token }
+            });
+            
+            if (res.data && res.data.wallet && res.data.wallet.limit > 0) {
+                setHasWallet(true);
+            } else {
+                setHasWallet(false);
+            }
+        } catch (err) {
+            console.error("Wallet check failed", err);
+        }
     };
 
     const handleLogout = () => {
@@ -88,26 +108,25 @@ const Dashboard = () => {
 
                     {isProfileExpanded && (
                         <div className="sidebar-subnav">
-                            <button 
-                                className={activeTab === 'profile-edit' ? 'active-sub' : ''} 
-                                onClick={() => handleNavClick('profile-edit')}
-                            >
+                            <button className={activeTab === 'profile-edit' ? 'active-sub' : ''} onClick={() => handleNavClick('profile-edit')}>
                                 <FaUserEdit /> Edit Profile
                             </button>
-                            <button 
-                                className={activeTab === 'profile-history' ? 'active-sub' : ''} 
-                                onClick={() => handleNavClick('profile-history')}
-                            >
+                            <button className={activeTab === 'profile-history' ? 'active-sub' : ''} onClick={() => handleNavClick('profile-history')}>
                                 <FaHistory /> History
                             </button>
-                            <button 
-                                className={activeTab === 'profile-settings' ? 'active-sub' : ''} 
-                                onClick={() => handleNavClick('profile-settings')}
-                            >
+                            <button className={activeTab === 'profile-settings' ? 'active-sub' : ''} onClick={() => handleNavClick('profile-settings')}>
                                 <FaCog /> Settings
                             </button>
                         </div>
                     )}
+
+                    <button 
+                        className={`wallet-nav-btn ${activeTab === 'wallet' ? 'active' : ''}`} 
+                        onClick={() => handleNavClick('wallet')}
+                    >
+                        <FaWallet /> 
+                        <span>{hasWallet ? 'Regulate Wallet' : 'Create Wallet'}</span>
+                    </button>
                     
                     <div className="divider">AGENTS</div>
                     
@@ -115,7 +134,7 @@ const Dashboard = () => {
                         <FaRobot /> <span>Advisory Agent</span>
                     </button>
                     <button className={activeTab === 'expense' ? 'active' : ''} onClick={() => handleNavClick('expense')}>
-                        <FaWallet /> <span>Expense Agent</span>
+                        <FaLayerGroup /> <span>Expense Agent</span>
                     </button>
                     <button className={activeTab === 'savings' ? 'active' : ''} onClick={() => handleNavClick('savings')}>
                         <FaPiggyBank /> <span>Saving Agent</span>
@@ -135,50 +154,15 @@ const Dashboard = () => {
                 
                 <div className="top-bar">
                     <div className="header-left">
-                        {activeTab === 'overview' ? (
-                            <div className="analytics-controls-wrapper">
-                                <div className="header-text-block">
-                                    <h2 className="page-title">📈 {user.name}'s Financial DNA</h2>
-                                    <p className="status-badge">
-                                        {viewMode === 'all' ? 'Combined History Analysis' : `Analysis for ${selectedMonth}`}
-                                    </p>
-                                </div>
-
-                                <div className="view-toggle-capsule">
-                                    <button 
-                                        className={`toggle-btn ${viewMode === 'all' ? 'active' : ''}`} 
-                                        onClick={() => setViewMode('all')}
-                                    >
-                                        <FaLayerGroup /> All-Time
-                                    </button>
-                                    <button 
-                                        className={`toggle-btn ${viewMode === 'month' ? 'active' : ''}`} 
-                                        onClick={() => setViewMode('month')}
-                                    >
-                                        <FaCalendarAlt /> Single Month
-                                    </button>
-                                    
-                                    {viewMode === 'month' && (
-                                        <input 
-                                            type="month" 
-                                            className="header-date-picker"
-                                            value={selectedMonth}
-                                            onChange={(e) => setSelectedMonth(e.target.value)}
-                                        />
-                                    )}
-                                </div>
-                            </div>
-                        ) : (
-                            <h2 className="page-title">
-                                {activeTab === 'profile-edit' && '✏️ Edit Monthly Record'}
-                                {activeTab === 'profile-history' && '📜 Transaction History'}
-                                {activeTab === 'profile-settings' && '⚙️ Settings'}
-                                {activeTab === 'advisory' && 'AI Advisor'}
-                                {activeTab === 'expense' && '💸 Expense Guardian'}
-                                {activeTab === 'savings' && 'Savings Agent'}
-                                {activeTab === 'notifications' && 'Notifications'}
-                            </h2>
-                        )}
+                        <h2 className="page-title">
+                            {activeTab === 'overview' && `📈 ${user.name}'s Financial DNA`}
+                            {activeTab === 'wallet' && (hasWallet ? '💳 Daily Wallet' : '🆕 Setup Wallet')}
+                            {activeTab === 'profile-edit' && '✏️ Edit Monthly Record'}
+                            {activeTab === 'profile-history' && '📜 Transaction History'}
+                            {activeTab === 'expense' && '💸 Expense Guardian'}
+                            {activeTab === 'savings' && 'Savings Agent'}
+                            {activeTab === 'notifications' && 'Notifications'}
+                        </h2>
                     </div>
 
                     <div className="user-info">
@@ -192,33 +176,24 @@ const Dashboard = () => {
 
                 <div className="content-area">
                     
-                    {/* --- 2. ADDED WALLET TO OVERVIEW TAB --- */}
                     {activeTab === 'overview' && (
-                        <div className="overview-layout">
-                            {/* Wallet sits at the top for quick access */}
-                            <div style={{ marginBottom: '20px' }}>
-                                <WalletWidget />
-                            </div>
-                            
-                            <Analytics 
-                                userName={user.name} 
-                                viewMode={viewMode} 
-                                selectedMonth={selectedMonth} 
-                            />
+                        <Analytics 
+                            userName={user.name} 
+                            viewMode={viewMode} 
+                            selectedMonth={selectedMonth} 
+                        />
+                    )}
+
+                    {activeTab === 'wallet' && (
+                        <div className="wallet-page-container">
+                            <WalletWidget onSetupComplete={() => setHasWallet(true)} />
                         </div>
                     )}
 
                     {activeTab === 'profile-edit' && <Profile userName={user.name} />}
                     {activeTab === 'profile-history' && <TransactionHistory />}
                     
-                    {activeTab === 'profile-settings' && (
-                        <div className="view-content placeholder-view">
-                            <h2>⚙️ Settings</h2><p>Configuration options coming soon.</p>
-                        </div>
-                    )}
-                    
-                    
-                    {/* 3. AGENTS */}
+                    {/* AGENTS */}
                     {activeTab === 'advisory' && <div className="view-content placeholder-view"><h2>Advisory Agent</h2><p>Coming Soon...</p></div>}
                     {activeTab === 'expense' && <ExpenseAgent />}
                     {activeTab === 'savings' && <SavingAgent />}
