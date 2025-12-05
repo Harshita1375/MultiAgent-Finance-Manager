@@ -10,6 +10,7 @@ import Analytics from './Analytics';
 import ExpenseAgent from './ExpenseAgent';
 import TransactionHistory from './TransactionHistory';
 import SavingAgent from './SavingAgent';
+import Notification from './Notification';
 
 const Dashboard = () => {
     const [searchParams] = useSearchParams();
@@ -209,7 +210,7 @@ const Dashboard = () => {
                     {activeTab === 'advisory' && <div className="view-content placeholder-view"><h2>Advisory Agent</h2><p>Coming Soon...</p></div>}
                     {activeTab === 'expense' && <ExpenseAgent />}
                     {activeTab === 'savings' && <SavingAgent />}
-                    {activeTab === 'notifications' && <div className="view-content placeholder-view"><h2>Notifications</h2><p>No new alerts.</p></div>}
+                    {activeTab === 'notifications' && <Notification />}
                 </div>
             </div>
         </div>

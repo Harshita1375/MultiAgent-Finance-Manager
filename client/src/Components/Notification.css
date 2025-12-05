@@ -1,0 +1,127 @@
+.notification-page {
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto; /* Centers the content */
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.notification-header h2 {
+    margin: 0;
+    color: #111827;
+}
+
+.mark-read-btn {
+    background: white;
+    border: 1px solid #d1d5db;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #4b5563;
+    transition: all 0.2s;
+}
+
+.mark-read-btn:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+/* List Container */
+.notification-list-container {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+
+/* Individual Card Item */
+.notification-card {
+    display: flex;
+    padding: 20px 25px;
+    border-bottom: 1px solid #f3f4f6;
+    gap: 20px;
+    transition: background 0.2s;
+}
+
+.notification-card:last-child {
+    border-bottom: none;
+}
+
+.notification-card:hover {
+    background-color: #f9fafb;
+}
+
+/* Unread Style */
+.notification-card.unread {
+    background-color: #eff6ff; /* Light Blue Background */
+    border-left: 4px solid #3b82f6; /* Blue Accent Bar */
+}
+
+.notification-card.unread .note-title {
+    font-weight: 700;
+    color: #1e3a8a;
+}
+
+/* Icons */
+.card-icon {
+    display: flex;
+    align-items: flex-start;
+    padding-top: 2px;
+}
+
+.note-icon { font-size: 1.5rem; }
+.note-icon.warning { color: #f59e0b; }
+.note-icon.danger { color: #ef4444; }
+.note-icon.success { color: #10b981; }
+.note-icon.info { color: #3b82f6; }
+
+/* Text Content */
+.card-content {
+    flex: 1;
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.note-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.note-date {
+    font-size: 0.85rem;
+    color: #9ca3af;
+}
+
+.note-message {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.empty-state {
+    padding: 40px;
+    text-align: center;
+    color: #6b7280;
+}
+
+.loading-text {
+    padding: 20px;
+    text-align: center;
+    color: #9ca3af;
+}
