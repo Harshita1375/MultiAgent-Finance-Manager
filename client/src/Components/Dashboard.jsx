@@ -11,6 +11,7 @@ import ExpenseAgent from './ExpenseAgent';
 import TransactionHistory from './TransactionHistory';
 import SavingAgent from './SavingAgent';
 import Notification from './Notification';
+import SidebarBadge from './SidebarBadge';
 
 const Dashboard = () => {
     const [searchParams] = useSearchParams();
@@ -120,6 +121,7 @@ const Dashboard = () => {
                     </button>
                     <button className={activeTab === 'notifications' ? 'active' : ''} onClick={() => handleNavClick('notifications')}>
                         <FaBell /> <span>Notifications</span>
+                        <SidebarBadge/>
                     </button>
                 </nav>
 
