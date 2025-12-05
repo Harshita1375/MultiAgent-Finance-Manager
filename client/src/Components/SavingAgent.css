@@ -315,3 +315,77 @@
     font-weight: 600;
     color: #64748b;
 }
+
+/* Add to SavingAgent.css */
+
+.monthly-commitments-section {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+    border: 1px solid #e5e7eb;
+}
+
+.monthly-commitments-section h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #374151;
+    font-size: 1.1rem;
+}
+
+.commitment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.commitment-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f9fafb;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #f3f4f6;
+    transition: transform 0.2s;
+}
+
+.commitment-card:hover {
+    transform: translateY(-2px);
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.c-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.commitment-card.sip .c-icon { background: #dbeafe; color: #2563eb; }
+.commitment-card.fd .c-icon { background: #d1fae5; color: #059669; }
+.commitment-card.gold .c-icon { background: #fef3c7; color: #d97706; }
+
+.c-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.c-info span {
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.c-info strong {
+    font-size: 1.1rem;
+    color: #111827;
+}

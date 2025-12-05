@@ -1,6 +1,5 @@
 const MonthlyRecord = require('../models/MonthlyRecord');
 const axios = require('axios');
-
 const YahooFinance = require('yahoo-finance2').default;
 const yahooFinance = new YahooFinance();
 
@@ -30,22 +29,40 @@ const calculateFutureValue = (principal, monthly, rate, years) => {
 
 exports.getSavingsAnalysis = async (req, res) => {
     try {
+        const { month, year } = req.query;
         const latestRecord = await MonthlyRecord.findOne({ user: req.user.id }).sort({ month: -1 });
+
+        let analysisRecord;
+        if (month && year) {
+            const targetMonth = `${year}-${month}`;
+            analysisRecord = await MonthlyRecord.findOne({ user: req.user.id, month: targetMonth });
+        } else {
+            analysisRecord = latestRecord;
+        }
         
         let savings = { sip: 0, fdRd: 0, gold: 0 };
         let income = 0;
         let hasEMI = false;
 
-        if (latestRecord) {
+        if (analysisRecord) {
             savings = {
+                sip: Number(analysisRecord.savings?.sip) || 0,
+                fdRd: Number(analysisRecord.savings?.fdRd) || 0,
+                gold: Number(analysisRecord.savings?.gold) || 0
+            };
+            income = Number(analysisRecord.income) || 0;
+            if (analysisRecord.expenses && analysisRecord.expenses.emi) {
+                hasEMI = analysisRecord.expenses.emi > 0;
+            }
+        }
+
+        let presentSavings = { sip: 0, fdRd: 0, gold: 0 };
+        if (latestRecord) {
+            presentSavings = {
                 sip: Number(latestRecord.savings?.sip) || 0,
                 fdRd: Number(latestRecord.savings?.fdRd) || 0,
                 gold: Number(latestRecord.savings?.gold) || 0
             };
-            income = Number(latestRecord.income) || 0;
-            if (latestRecord.expenses && latestRecord.expenses.emi) {
-                hasEMI = latestRecord.expenses.emi > 0;
-            }
         }
 
         const marketData = await fetchLiveMarketData();
@@ -69,7 +86,7 @@ exports.getSavingsAnalysis = async (req, res) => {
         const totalSaved = savings.sip + savings.fdRd + savings.gold;
 
         if (totalSaved === 0) {
-            suggestions.push("🚨 You have 0 savings recorded. Start a small SIP of ₹500 today.");
+            suggestions.push("🚨 No savings data found for this period.");
         } else {
             if (savings.fdRd > savings.sip * 2) suggestions.push("⚠️ Inflation Risk: Your FD allocation is high. Shift to SIPs.");
             if (savings.gold === 0) suggestions.push("🛡️ Hedge Missing: Add 5-10% in Digital Gold.");
@@ -77,7 +94,8 @@ exports.getSavingsAnalysis = async (req, res) => {
         }
 
         res.json({
-            currentSavings: savings,
+            currentSavings: savings,      
+            presentSavings: presentSavings, 
             projection,
             suggestions,
             hasEMI,
@@ -93,26 +111,35 @@ exports.getSavingsAnalysis = async (req, res) => {
 exports.getTradingSuggestions = async (req, res) => {
     try {
         const userId = req.user.id;
-        const record = await MonthlyRecord.findOne({ user: userId }).sort({ month: -1 });
+        const { type, month, year } = req.query;
         
-        if (!record) return res.json({ freeCash: 0, plans: [] });
+        let totalInvestableCash = 0;
+        let recordsToProcess = [];
 
-        // --- Calculate Free Cash ---
-        const income = Number(record.income) || 0;
-        const expenses = record.expenses || {};
-        const savings = record.savings || {};
-        
-        const totalFixed = (Number(expenses.rent)||0) + (Number(expenses.emi)||0) + (Number(expenses.grocery)||0) + (Number(expenses.electricity)||0);
-        const totalSaved = (Number(savings.sip)||0) + (Number(savings.fdRd)||0) + (Number(savings.gold)||0);
-        
-        const estimatedFreeCash = Math.max(0, income - totalFixed - totalSaved - (income * 0.1));
-
-        if (estimatedFreeCash < 500) {
-            return res.json({ freeCash: estimatedFreeCash, plans: [], message: "Low funds" });
+        if (type === 'month' && month && year) {
+            const targetMonth = `${year}-${month}`;
+            const singleRecord = await MonthlyRecord.findOne({ user: userId, month: targetMonth });
+            if (singleRecord) recordsToProcess.push(singleRecord);
+        } else {
+            recordsToProcess = await MonthlyRecord.find({ user: userId });
         }
 
-        // --- UPDATED WATCHLIST: 10 High-Safety Options ---
-        // We included cheaper "Safe" stocks (ITC, Tata Power, ONGC) so they fit your ₹6,000 budget.
+        recordsToProcess.forEach(record => {
+            const income = Number(record.income) || 0;
+            const expenses = record.expenses || {};
+            const savings = record.savings || {};
+            
+            const totalFixed = (Number(expenses.rent)||0) + (Number(expenses.emi)||0) + (Number(expenses.grocery)||0) + (Number(expenses.electricity)||0);
+            const totalAllocated = (Number(savings.sip)||0) + (Number(savings.fdRd)||0) + (Number(savings.gold)||0);
+            const monthlyFreeCash = Math.max(0, income - totalFixed - totalAllocated - (income * 0.1));
+            
+            totalInvestableCash += monthlyFreeCash;
+        });
+
+        if (totalInvestableCash < 500) {
+            return res.json({ freeCash: totalInvestableCash, plans: [], message: "Low funds" });
+        }
+
         const watchlist = [
             { symbol: 'NIFTYBEES.NS', name: 'Nifty 50 ETF', type: 'Safe' },
             { symbol: 'GOLDBEES.NS', name: 'Gold ETF', type: 'Safe' },
@@ -127,34 +154,15 @@ exports.getTradingSuggestions = async (req, res) => {
         ];
 
         let quotes = [];
-
         try {
-            console.log("🔄 Fetching Live Data for Safest Stocks...");
-            
-            // Parallel Fetch
             const results = await Promise.all(watchlist.map(stock => yahooFinance.quote(stock.symbol)));
-            
-            // Filter valid results
-            quotes = results
-                .filter(q => q && q.symbol) 
-                .map(q => ({
-                    symbol: q.symbol,
-                    regularMarketPrice: q.regularMarketPrice || 0,
-                    regularMarketChangePercent: q.regularMarketChangePercent || 0
-                }));
-
-            console.log(`✅ Fetched Real Market Data for ${quotes.length} stocks`);
-
-        } catch (e) {
-            // --- FAILURE LOGIC PRESERVED ---
-            console.error("⚠️ API Failed, switching to Hardcoded Fallback:", e.message);
-            
-            // We map the ENTIRE watchlist to fallback data so the user still gets recommendations
-            quotes = watchlist.map(w => ({ 
-                symbol: w.symbol, 
-                regularMarketPrice: 250, // Set low enough to ensure they fit the budget in demo mode
-                regularMarketChangePercent: 1.2 
+            quotes = results.filter(q => q && q.symbol).map(q => ({
+                symbol: q.symbol,
+                regularMarketPrice: q.regularMarketPrice || 0,
+                regularMarketChangePercent: q.regularMarketChangePercent || 0
             }));
+        } catch (e) {
+            quotes = watchlist.map(w => ({ symbol: w.symbol, regularMarketPrice: 250, regularMarketChangePercent: 1.2 }));
         }
 
         let plans = [];
@@ -163,10 +171,8 @@ exports.getTradingSuggestions = async (req, res) => {
             if (!stockInfo) return; 
 
             const price = quote.regularMarketPrice || 0;
-            
-            // Budget Check: Only show what the user can afford
-            if (price > 0 && price < estimatedFreeCash) {
-                const maxQty = Math.floor(estimatedFreeCash / price);
+            if (price > 0 && price < totalInvestableCash) {
+                const maxQty = Math.floor(totalInvestableCash / price);
                 plans.push({
                     type: stockInfo.type,
                     name: stockInfo.name,
@@ -179,16 +185,14 @@ exports.getTradingSuggestions = async (req, res) => {
             }
         });
 
-        // --- SORTING: Safe First, Then High Growth ---
         plans.sort((a, b) => {
-            if (a.type === 'Safe' && b.type !== 'Safe') return -1; // Safe goes to top
+            if (a.type === 'Safe' && b.type !== 'Safe') return -1; 
             if (b.type === 'Safe' && a.type !== 'Safe') return 1;
-            return b.change - a.change; // Then sort by daily gain
+            return b.change - a.change; 
         });
 
-        // Return exactly Top 6
         res.json({
-            freeCash: estimatedFreeCash,
+            freeCash: totalInvestableCash,
             plans: plans.slice(0, 6)
         });
 
