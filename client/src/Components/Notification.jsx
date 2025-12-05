@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // 1. Import useRef
 import axios from 'axios';
 import { FaExclamationTriangle, FaInfoCircle, FaTimesCircle, FaCheckCircle, FaCheckDouble } from 'react-icons/fa';
 import './Notification.css';
@@ -6,18 +6,24 @@ import './Notification.css';
 const Notification = () => {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
+    
+    // 2. Add this ref to track if we already ran the check
+    const hasChecked = useRef(false);
+
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-    // Fetch Notifications
     const fetchNotifications = async () => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
         try {
-            // 1. Ask AI to check for new alerts first
-            await axios.post(`${API_URL}/api/notifications/generate`, {}, { headers: { 'x-auth-token': token } });
+            // 3. Only generate if we haven't done it yet
+            if (!hasChecked.current) {
+                hasChecked.current = true; // Mark as done immediately
+                await axios.post(`${API_URL}/api/notifications/generate`, {}, { headers: { 'x-auth-token': token } });
+            }
 
-            // 2. Get the updated list
+            // Always fetch the latest list (this is safe to do multiple times)
             const res = await axios.get(`${API_URL}/api/notifications`, {
                 headers: { 'x-auth-token': token }
             });
@@ -31,13 +37,13 @@ const Notification = () => {
 
     useEffect(() => {
         fetchNotifications();
+        // eslint-disable-next-line
     }, []);
 
     const markAllRead = async () => {
         const token = localStorage.getItem('token');
         try {
             await axios.put(`${API_URL}/api/notifications/read`, {}, { headers: { 'x-auth-token': token } });
-            // Optimistically update UI
             setNotifications(notifications.map(n => ({ ...n, isRead: true })));
         } catch (err) {
             console.error(err);
