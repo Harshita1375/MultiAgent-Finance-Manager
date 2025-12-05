@@ -1,6 +1,8 @@
 const MonthlyRecord = require('../models/MonthlyRecord');
-const axios = require('axios'); 
-const yahooFinance = require('yahoo-finance2').default; 
+const axios = require('axios');
+
+const YahooFinance = require('yahoo-finance2').default;
+const yahooFinance = new YahooFinance();
 
 const DEFAULTS = {
     GOLD_RATE_10Y: 0.09, 
@@ -10,7 +12,6 @@ const DEFAULTS = {
 
 const fetchLiveMarketData = async () => {
     try {
-        const apiKey = process.env.ALPHA_VANTAGE_KEY;
         let liveData = { ...DEFAULTS };
         liveData.SIP_RETURN = 0.12; 
         return liveData;
@@ -119,16 +120,38 @@ exports.getTradingSuggestions = async (req, res) => {
         ];
 
         let quotes = [];
+
         try {
-            quotes = await yahooFinance.quote(watchlist.map(w => w.symbol));
+            console.log("🔄 Fetching Live Data...");
+            
+            const results = await Promise.all(watchlist.map(stock => yahooFinance.quote(stock.symbol)));
+            
+            quotes = results
+                .filter(q => q && q.symbol) 
+                .map(q => ({
+                    symbol: q.symbol,
+                    regularMarketPrice: q.regularMarketPrice || 0,
+                    regularMarketChangePercent: q.regularMarketChangePercent || 0
+                }));
+
+            console.log(`✅ Fetched Real Market Data for ${quotes.length} stocks`);
+
         } catch (e) {
-            console.log("Yahoo Finance Error, using mock data");
-            quotes = watchlist.map(w => ({ symbol: w.symbol, regularMarketPrice: 2500, regularMarketChangePercent: 1.2 }));
+
+            console.error("⚠️ API Failed, switching to Hardcoded Fallback:", e.message);
+            
+            quotes = watchlist.map(w => ({ 
+                symbol: w.symbol, 
+                regularMarketPrice: 2500, 
+                regularMarketChangePercent: 1.2 
+            }));
         }
 
         let plans = [];
         quotes.forEach(quote => {
             const stockInfo = watchlist.find(w => w.symbol === quote.symbol);
+            if (!stockInfo) return; 
+
             const price = quote.regularMarketPrice || 0;
             
             if (price > 0 && price < estimatedFreeCash) {
@@ -156,7 +179,6 @@ exports.getTradingSuggestions = async (req, res) => {
     }
 };
 
-// --- 3. ASSET AUDIT ---
 exports.analyzeAsset = async (req, res) => {
     try {
         const { type, emiAmount, value, location, tenureYears } = req.body;
