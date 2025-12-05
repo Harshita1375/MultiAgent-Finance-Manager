@@ -30,6 +30,7 @@ app.use('/api/records', require('./routes/recordRoutes'));
 app.use('/api/agent/expense', require('./routes/expenseAgentRoutes'));
 app.use('/api/agent/savings', require('./routes/savingAgentRoutes'));
 app.use('/api/notifications', require('./routes/notificationsRoutes'));
+app.use('/api/wallet', require('./routes/walletRoutes'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server started on port ${PORT}`));

@@ -12,6 +12,7 @@ import TransactionHistory from './TransactionHistory';
 import SavingAgent from './SavingAgent';
 import Notification from './Notification';
 import SidebarBadge from './SidebarBadge';
+import WalletWidget from './WalletWidget';
 
 const Dashboard = () => {
     const [searchParams] = useSearchParams();
@@ -191,12 +192,20 @@ const Dashboard = () => {
 
                 <div className="content-area">
                     
+                    {/* --- 2. ADDED WALLET TO OVERVIEW TAB --- */}
                     {activeTab === 'overview' && (
-                        <Analytics 
-                            userName={user.name} 
-                            viewMode={viewMode} 
-                            selectedMonth={selectedMonth} 
-                        />
+                        <div className="overview-layout">
+                            {/* Wallet sits at the top for quick access */}
+                            <div style={{ marginBottom: '20px' }}>
+                                <WalletWidget />
+                            </div>
+                            
+                            <Analytics 
+                                userName={user.name} 
+                                viewMode={viewMode} 
+                                selectedMonth={selectedMonth} 
+                            />
+                        </div>
                     )}
 
                     {activeTab === 'profile-edit' && <Profile userName={user.name} />}
@@ -207,6 +216,7 @@ const Dashboard = () => {
                             <h2>⚙️ Settings</h2><p>Configuration options coming soon.</p>
                         </div>
                     )}
+                    
                     
                     {/* 3. AGENTS */}
                     {activeTab === 'advisory' && <div className="view-content placeholder-view"><h2>Advisory Agent</h2><p>Coming Soon...</p></div>}

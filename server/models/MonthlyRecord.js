@@ -18,6 +18,12 @@ const MonthlyRecordSchema = new mongoose.Schema({
     
     income: { type: Number, default: 0 },
 
+    wallet: {
+        limit: { type: Number, default: 0 }, 
+        spent: { type: Number, default: 0 }, 
+        transactions: [TransactionSchema]    
+    },
+
     expenses: {
         emi: { type: Number, default: 0 },
         rent: { type: Number, default: 0 },
@@ -29,14 +35,15 @@ const MonthlyRecordSchema = new mongoose.Schema({
         otherExpense: { type: Number, default: 0 }
     },
 
-    transactions: [TransactionSchema],
+    transactions: [TransactionSchema], 
     totalNeeds: { type: Number, default: 0 },
     totalWants: { type: Number, default: 0 },
 
     savings: {
         sip: { type: Number, default: 0 },
         fdRd: { type: Number, default: 0 },
-        gold: { type: Number, default: 0 }
+        gold: { type: Number, default: 0 },
+        cash: { type: Number, default: 0 } 
     },
     
     notes: { type: String }
