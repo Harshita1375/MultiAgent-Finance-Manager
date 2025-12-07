@@ -16,3 +16,5 @@ dist/
 
 # System files
 .DS_Store
+
+server/GuestUser.js

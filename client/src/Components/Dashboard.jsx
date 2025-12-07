@@ -154,7 +154,7 @@ const Dashboard = () => {
 
                         <div className="header-text-block">
                             <h2 className="page-title">
-                                {activeTab === 'overview' && `${user.name}'s Financial DNA`}
+                                {activeTab === 'overview' && `${user.name}'s Economic Health Index`}
                                 {activeTab === 'wallet' && (hasWallet ? 'Daily Wallet' : 'Setup Wallet')}
                                 {activeTab === 'profile-edit' && 'Edit Monthly Record'}
                                 {activeTab === 'profile-history' && 'Transaction History'}
