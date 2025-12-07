@@ -76,7 +76,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
     };
 
     const getLast7DaysLabels = () => {
-        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; // Short labels for mobile
         const labels = [];
         for (let i = 6; i >= 0; i--) {
             const d = new Date();
@@ -92,12 +92,12 @@ const Analytics = ({ viewMode, selectedMonth }) => {
             label: 'Daily Spend',
             data: walletHistory, 
             backgroundColor: '#f59e0b',
-            borderRadius: 6,
-            barThickness: 20
+            borderRadius: 4,
+            barThickness: 10
         }]
     };
 
-    // --- SHADED GRADIENT CHART CONFIG ---
+    // --- UPDATED: ALL LINES SHADED ---
     const cashFlowData = {
         labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], 
         datasets: [
@@ -108,7 +108,14 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                 borderWidth: 2,
                 pointRadius: 0,
                 borderDash: [5, 5],
-                fill: false
+                fill: true, // Enable shading
+                backgroundColor: (context) => { // Green Gradient
+                    const ctx = context.chart.ctx;
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                    gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
+                    gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+                    return gradient;
+                },
             },
             {
                 label: 'Expenses',
@@ -117,7 +124,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                 backgroundColor: (context) => {
                     const ctx = context.chart.ctx;
                     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                    gradient.addColorStop(0, 'rgba(245, 158, 11, 0.6)');
+                    gradient.addColorStop(0, 'rgba(245, 158, 11, 0.5)');
                     gradient.addColorStop(1, 'rgba(245, 158, 11, 0.0)');
                     return gradient;
                 },
@@ -126,7 +133,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                 fill: true,
                 pointBackgroundColor: '#fff',
                 pointBorderColor: '#f59e0b',
-                pointRadius: 5
+                pointRadius: 4
             },
             {
                 label: 'Savings Trend',
@@ -135,7 +142,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                 backgroundColor: (context) => {
                     const ctx = context.chart.ctx;
                     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.6)'); 
+                    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.5)'); 
                     gradient.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
                     return gradient;
                 },
@@ -144,7 +151,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                 fill: true,
                 pointBackgroundColor: '#fff',
                 pointBorderColor: '#8b5cf6',
-                pointRadius: 5
+                pointRadius: 4
             }
         ]
     };
@@ -153,33 +160,18 @@ const Analytics = ({ viewMode, selectedMonth }) => {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 8 } },
-            tooltip: { 
-                mode: 'index', 
-                intersect: false,
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                titleColor: '#1f2937',
-                bodyColor: '#4b5563',
-                borderColor: '#e5e7eb',
-                borderWidth: 1
-            }
+            legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 8, font: { size: 10 } } },
+            tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(255, 255, 255, 0.9)', titleColor: '#1f2937', bodyColor: '#4b5563', borderColor: '#e5e7eb', borderWidth: 1 }
         },
         scales: {
-            y: { 
-                beginAtZero: true, 
-                grid: { borderDash: [5, 5], color: '#f3f4f6' },
-                ticks: { font: { size: 11 } }
-            },
-            x: { 
-                grid: { display: false },
-                ticks: { font: { size: 11 } }
-            }
+            y: { beginAtZero: true, grid: { borderDash: [5, 5], color: '#f3f4f6' }, ticks: { font: { size: 10 } } },
+            x: { grid: { display: false }, ticks: { font: { size: 10 } } }
         },
         interaction: { mode: 'nearest', axis: 'x', intersect: false }
     };
 
     const distributionData = {
-        labels: ['Fixed Needs', 'Wallet/Wants', 'Savings'],
+        labels: ['Fixed', 'Wallet', 'Saved'],
         datasets: [{
             data: [breakdown.fixed, breakdown.wants, breakdown.savings],
             backgroundColor: ['#3b82f6', '#f59e0b', '#10b981'],
@@ -191,23 +183,23 @@ const Analytics = ({ viewMode, selectedMonth }) => {
     return (
         <div className="analytics-container">
             
+            {/* KPI ROW */}
             <div className="kpi-grid">
-                
                 <div className="kpi-card glass-blue">
                     <div className="kpi-icon"><FaMoneyBillWave /></div>
                     <div className="kpi-info">
-                        <small>Total Earnings</small>
-                        <h3>₹{income.toLocaleString()}</h3>
-                        <span className="badge positive"><FaArrowUp /> Income Source</span>
+                        <small>Earnings</small>
+                        <h3>₹{(income/1000).toFixed(1)}k</h3>
+                        <span className="badge positive">Income</span>
                     </div>
                 </div>
 
                 <div className="kpi-card glass-purple">
                     <div className="kpi-icon"><FaRegLightbulb /></div>
                     <div className="kpi-info">
-                        <small>Efficiency Gain</small>
+                        <small>Efficiency</small>
                         <h3>+{efficiency}%</h3>
-                        <span className="sub-text">Potential: +₹{potentialSave.toLocaleString()}</span>
+                        <span className="sub-text">Potential: +₹{potentialSave}</span>
                     </div>
                 </div>
 
@@ -216,20 +208,21 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                     <div className="kpi-info">
                         <small>Wallet Burn</small>
                         <h3>₹{breakdown.wants.toLocaleString()}</h3>
-                        <span className="badge neutral">Real-time</span>
+                        <span className="badge neutral">Daily</span>
                     </div>
                 </div>
 
                 <div className="kpi-card glass-green">
                     <div className="kpi-icon"><FaPiggyBank /></div>
                     <div className="kpi-info">
-                        <small>Total Saved</small>
-                        <h3>₹{saved.toLocaleString()}</h3>
-                        <span className="sub-text">Rate: {Math.round((saved / (income || 1)) * 100)}%</span>
+                        <small>Saved</small>
+                        <h3>₹{(saved/1000).toFixed(1)}k</h3>
+                        <span className="sub-text">{Math.round((saved / (income || 1)) * 100)}% Rate</span>
                     </div>
                 </div>
             </div>
 
+            {/* CHARTS ROW */}
             <div className="charts-grid-main">
                 <div className="chart-card large">
                     <div className="card-header"><h4>Cash Flow Trends</h4></div>
@@ -237,9 +230,10 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                         <Line data={cashFlowData} options={lineOptions} />
                     </div>
                 </div>
+                
                 <div className="side-charts-col">
                     <div className="chart-card small">
-                        <h4>Wallet Pulse (Last 7 Days)</h4>
+                        <h4>Wallet (7 Days)</h4>
                         <div className="chart-container-sm">
                             <Bar data={walletChartData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { display: false } } }} />
                         </div>
@@ -250,43 +244,39 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                             <div className="doughnut-center"><span>Total</span><strong>₹{(income/1000).toFixed(0)}k</strong></div>
                         </div>
                         <div className="legend-list">
-                            <div className="legend-item"><span className="dot blue"></span> Needs</div>
+                            <div className="legend-item"><span className="dot blue"></span> Fixed</div>
                             <div className="legend-item"><span className="dot orange"></span> Wallet</div>
-                            <div className="legend-item"><span className="dot green"></span> Savings</div>
+                            <div className="legend-item"><span className="dot green"></span> Saved</div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            {/* TRANSACTIONS GRID */}
             <div className="transactions-grid">
-                
                 <div className="transaction-card">
-                    <div className="card-header"><h4><FaReceipt /> Recent Activity</h4></div>
+                    <div className="card-header"><h4><FaReceipt /> Recent</h4></div>
                     <div className="transaction-list">
-                        {recentTransactions.length > 0 ? (
-                            recentTransactions.map(tx => (
-                                <div key={tx.id} className="transaction-item">
-                                    <div className={`tx-icon ${tx.type || 'want'}`}><FaArrowDown /></div>
-                                    <div className="tx-details"><span className="tx-title">{tx.title}</span><span className="tx-date">{formatDate(tx.date)}</span></div>
-                                    <div className="tx-amount expense">-₹{tx.amount.toLocaleString()}</div>
-                                </div>
-                            ))
-                        ) : <p className="no-data-text">No recent transactions.</p>}
+                        {recentTransactions.length > 0 ? recentTransactions.map((tx, i) => (
+                            <div key={i} className="transaction-item">
+                                <div className={`tx-icon ${tx.type || 'want'}`}><FaArrowDown /></div>
+                                <div className="tx-details"><span className="tx-title">{tx.title}</span><span className="tx-date">{formatDate(tx.date)}</span></div>
+                                <div className="tx-amount expense">-₹{tx.amount.toLocaleString()}</div>
+                            </div>
+                        )) : <p className="no-data-text">No recent transactions.</p>}
                     </div>
                 </div>
 
                 <div className="transaction-card">
-                    <div className="card-header"><h4><FaClock /> Upcoming Payments</h4></div>
+                    <div className="card-header"><h4><FaClock /> Upcoming</h4></div>
                     <div className="transaction-list">
-                        {upcomingTransactions.length > 0 ? (
-                            upcomingTransactions.map(tx => (
-                                <div key={tx.id} className="transaction-item">
-                                    <div className="tx-icon upcoming"><FaClock /></div>
-                                    <div className="tx-details"><span className="tx-title">{tx.title}</span><span className="tx-date">{tx.date}</span></div>
-                                    <div className="tx-amount">₹{tx.amount.toLocaleString()}</div>
-                                </div>
-                            ))
-                        ) : <p className="no-data-text">No upcoming payments.</p>}
+                        {upcomingTransactions.length > 0 ? upcomingTransactions.map((tx, i) => (
+                            <div key={i} className="transaction-item">
+                                <div className="tx-icon upcoming"><FaClock /></div>
+                                <div className="tx-details"><span className="tx-title">{tx.title}</span><span className="tx-date">{tx.date}</span></div>
+                                <div className="tx-amount">₹{tx.amount.toLocaleString()}</div>
+                            </div>
+                        )) : <p className="no-data-text">No upcoming payments.</p>}
                     </div>
                 </div>
             </div>
