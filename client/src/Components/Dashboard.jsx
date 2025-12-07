@@ -25,7 +25,7 @@ const Dashboard = () => {
     const [user, setUser] = useState({ name: 'Guest' });
     const [activeTab, setActiveTab] = useState('overview'); 
     
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
     
     const [isProfileExpanded, setIsProfileExpanded] = useState(false); 
     const [hasWallet, setHasWallet] = useState(false);
