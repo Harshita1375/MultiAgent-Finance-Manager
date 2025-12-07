@@ -30,6 +30,18 @@ A calculator to evaluate big financial decisions (e.g., "Buying a House vs. Rent
 
 Output: Determines if a purchase is a "Wealth Creator" or a "Liability" based on EMI, tenure, and depreciation/appreciation rates.
 
+## ⚡ Quick Start (Demo Access)
+
+Want to see the app in action without entering months of data?
+
+We have pre-loaded a **Demo User** with 6 months of realistic financial history—including income patterns, expense spikes, and active goals—so you can visualize the AI's full capabilities immediately.
+
+### 🔐 Guest Credentials:
+* **Email:** `harshita@gmail.com`
+* **Password:** `123456`
+
+> **Note:** You can also click **Sign Up** to create your own private account and start tracking your personal financial journey from scratch.
+
 ## 🛠️ Tech Stack
 
 Backend: Node.js, Express.js
