@@ -25,8 +25,7 @@ const Dashboard = () => {
     const [user, setUser] = useState({ name: 'Guest' });
     const [activeTab, setActiveTab] = useState('overview'); 
     
-    // Default Sidebar State: Open on Desktop, Closed on Mobile
-    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     
     const [isProfileExpanded, setIsProfileExpanded] = useState(false); 
     const [hasWallet, setHasWallet] = useState(false);
