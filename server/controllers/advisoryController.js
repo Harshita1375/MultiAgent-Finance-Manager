@@ -1,6 +1,7 @@
 const MonthlyRecord = require('../models/MonthlyRecord');
 const Goal = require('../models/Goal');
 const Expense = require('../models/Expense');
+const Notification = require('../models/Notification');
 
 exports.getAdvisoryData = async (req, res) => {
     try {
@@ -83,12 +84,23 @@ exports.updateGoalProgress = async (req, res) => {
         if (!goal) return res.status(404).json({ msg: "Goal not found" });
 
         goal.savedAmount += Number(amount);
-        if (goal.savedAmount >= goal.targetAmount) {
+
+        if (goal.status !== 'Completed' && goal.savedAmount >= goal.targetAmount) {
+            
             goal.status = 'Completed';
+            await Notification.create({
+                user: req.user.id,
+                title: 'Goal Achieved! 🏆',
+                message: `Congratulations! You've fully funded your goal "${goal.title}" with ₹${goal.savedAmount.toLocaleString()}.`,
+                type: 'success', 
+                date: new Date()
+            });
         }
+
         await goal.save();
         res.json(goal);
     } catch (err) {
+        console.error(err);
         res.status(500).send('Server Error');
     }
 };
