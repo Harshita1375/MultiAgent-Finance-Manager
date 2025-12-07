@@ -146,3 +146,99 @@
     font-size: 1.2rem;
     color: #9ca3af;
 }
+
+/* ... your existing CSS ... */
+
+/* --- TRANSACTIONS SECTION --- */
+.transactions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+    margin-top: 25px;
+}
+
+.transaction-card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    border: 1px solid #e5e7eb;
+}
+
+.transaction-card h4 {
+    margin: 0;
+    color: #374151;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.transaction-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.transaction-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.tx-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    margin-right: 15px;
+}
+
+.tx-icon.want { background: #fee2e2; color: #ef4444; } /* Red */
+.tx-icon.need { background: #e0f2fe; color: #0ea5e9; } /* Blue */
+.tx-icon.upcoming { background: #fef3c7; color: #f59e0b; } /* Yellow */
+
+.tx-details {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.tx-title {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.95rem;
+}
+
+.tx-date {
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
+
+.tx-amount {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1f2937;
+}
+
+.tx-amount.expense {
+    color: #ef4444;
+}
+
+.no-data-text {
+    text-align: center;
+    color: #9ca3af;
+    font-style: italic;
+    padding: 20px 0;
+}
