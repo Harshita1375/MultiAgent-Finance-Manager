@@ -76,6 +76,56 @@ Financial Data: yahoo-finance2 API (Real-time stock data)
 
 Architecture: Controller-Service pattern with Fallback mechanisms.
 
+## 📂 Project Structure
+
+The project is divided into a **Client** (React Frontend) and **Server** (Node.js Backend), following a modular architecture where each "Agent" has its own dedicated Controller, Route, and Component.
+
+```bash
+MultiAgent-Finance-Manager/
+├── client/                     # Frontend (React.js)
+│   ├── public/
+│   └── src/
+│       ├── Assest/             # Static images (Growth, Secure, etc.)
+│       ├── Components/         # UI Modules for each Agent
+│       │   ├── AdvisoryAgent.jsx   # "Fiscal Profile" Logic
+│       │   ├── ExpenseAgent.jsx    # "Guardian" Logic & Charts
+│       │   ├── SavingAgent.jsx     # Wealth Projection & Trading
+│       │   ├── Notification.jsx    # Alert System
+│       │   ├── Dashboard.jsx       # Main Control Center
+│       │   ├── WalletWidget.jsx    # Daily Burn Rate Tracker
+│       │   └── Auth.jsx            # Login/Signup Logic
+│       ├── App.js              # Main Router
+│       └── index.js            # Entry Point
+│
+├── server/                     # Backend (Node.js/Express)
+│   ├── config/                 # DB Connection
+│   ├── models/                 # Mongoose Database Schemas
+│   │   ├── User.js             # Profile & Financial Settings
+│   │   ├── MonthlyRecord.js    # Historical Data Structure
+│   │   ├── Expense.js          # Individual Transaction Schema
+│   │   ├── Goal.js             # Savings Goals Schema
+│   │   └── Notification.js     # Alert Schema
+│   │
+│   ├── controllers/            # 🧠 AI Logic & Request Handlers
+│   │   ├── advisoryController.js     # Anomaly Detection Logic
+│   │   ├── expenseAgentController.js # Categorization Logic
+│   │   ├── savingAgentController.js  # Trading & Wealth Logic
+│   │   ├── notificationController.js # Event Triggers
+│   │   └── walletController.js       # Daily Limits Logic
+│   │
+│   ├── routes/                 # API Endpoints
+│   │   ├── advisoryRoutes.js   # /api/agent/advisory
+│   │   ├── expenseRoutes.js    # /api/agent/expense
+│   │   ├── savingRoutes.js     # /api/agent/saving
+│   │   └── authRoutes.js       # /api/auth
+│   │
+│   ├── GuestUser.js            # 🌱 Database Seeding Script (Demo Data)
+│   ├── index.js                # Server Entry Point
+│   └── .env                    # Environment Variables (Secrets)
+│
+└── docs/                       # Documentation
+    └── STOCK_SELECTION_STRATEGY.md  # Detailed Trading Algorithm
+
 ## ⚙️ Installation & Setup
 
 ### 1. Prerequisites
