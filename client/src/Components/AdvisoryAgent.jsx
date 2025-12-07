@@ -15,6 +15,8 @@ const AdvisoryAgent = () => {
     const [newGoal, setNewGoal] = useState({ title: '', targetAmount: '' });
     const [simCost, setSimCost] = useState('');
     const [simResult, setSimResult] = useState(null);
+    const [editingGoal, setEditingGoal] = useState(null); 
+    const [addAmount, setAddAmount] = useState('');       
 
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -61,6 +63,24 @@ const AdvisoryAgent = () => {
             setNewGoal({ title: '', targetAmount: '' });
         } catch (err) {
             alert("Error adding goal");
+        }
+    };
+
+    const handleUpdateProgress = async () => {
+        if (!addAmount || !editingGoal) return;
+        
+        const token = localStorage.getItem('token');
+        try {
+            await axios.put(`${API_URL}/api/agent/advisory/goals/progress`, 
+                { goalId: editingGoal._id, amount: addAmount }, 
+                { headers: { 'x-auth-token': token } }
+            );
+            
+            await fetchAdvisoryData(); 
+            setEditingGoal(null);     
+            setAddAmount('');          
+        } catch (err) {
+            alert("Error updating goal progress");
         }
     };
 
@@ -137,12 +157,33 @@ const AdvisoryAgent = () => {
 
                         <div className="goals-list">
                             {data.goals.length > 0 ? data.goals.map(goal => {
-                                const progress = (goal.savedAmount / goal.targetAmount) * 100;
+                                const progress = Math.min((goal.savedAmount / goal.targetAmount) * 100, 100);
+                                const remaining = goal.targetAmount - goal.savedAmount;
+
                                 return (
                                     <div key={goal._id} className="goal-card">
                                         <div className="goal-info">
-                                            <strong>{goal.title}</strong>
-                                            <span>₹{goal.savedAmount} / ₹{goal.targetAmount}</span>
+                                            <div className="goal-text">
+                                                <strong>{goal.title}</strong>
+                                                <small style={{display:'block', color:'#6b7280', fontSize:'0.8rem'}}>
+                                                    {remaining > 0 
+                                                        ? `Need ₹${remaining.toLocaleString()} more` 
+                                                        : 'Goal Completed! 🎉'}
+                                                </small>
+                                            </div>
+                                            <div style={{textAlign:'right'}}>
+                                                <span style={{display:'block', fontWeight:'bold'}}>
+                                                    ₹{goal.savedAmount.toLocaleString()} / ₹{goal.targetAmount.toLocaleString()}
+                                                </span>
+                                                {remaining > 0 && (
+                                                    <button 
+                                                        className="add-funds-btn"
+                                                        onClick={() => setEditingGoal(goal)}
+                                                    >
+                                                        + Add Funds
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="progress-bg">
                                             <div className="progress-fill" style={{width: `${progress}%`}}></div>
@@ -278,6 +319,25 @@ const AdvisoryAgent = () => {
                                 <small>Efficiency Boost</small>
                                 <span style={{color:'#4ade80'}}>+{plan.improvement.percentage}%</span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {editingGoal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h3>Add Savings to "{editingGoal.title}"</h3>
+                        <input 
+                            type="number" 
+                            placeholder="Amount (₹)"
+                            value={addAmount}
+                            onChange={(e) => setAddAmount(e.target.value)}
+                            autoFocus
+                        />
+                        <div className="modal-actions">
+                            <button className="save-btn" onClick={handleUpdateProgress}>Confirm</button>
+                            <button className="cancel-btn" onClick={() => setEditingGoal(null)}>Cancel</button>
                         </div>
                     </div>
                 </div>
