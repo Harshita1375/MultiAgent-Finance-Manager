@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { 
-    FaHistory, FaCog, FaHome, FaUser, FaRobot, FaPiggyBank, FaBell, FaBars, 
-    FaSignOutAlt, FaUserCircle, FaLayerGroup, FaCalendarAlt, FaUserEdit, 
-    FaChevronDown, FaChevronUp, FaWallet, FaLayerGroup as FaExpenseIcon 
+    FaHistory, FaCog, FaHome, FaUser, FaRobot, FaPiggyBank, FaBell, FaBars,FaSignOutAlt, FaUserCircle, FaChevronDown, FaChevronUp, 
+    FaWallet,FaLayerGroup as FaExpenseIcon, FaUserEdit
 } from 'react-icons/fa';
-import './Dashboard.css'; 
+import './Dashboard.css';
 import Profile from './Profile';
 import Analytics from './Analytics';
 import ExpenseAgent from './ExpenseAgent';
@@ -16,21 +15,18 @@ import Notification from './Notification';
 import SidebarBadge from './SidebarBadge';
 import AdvisoryAgent from './AdvisoryAgent';
 import WalletWidget from './WalletWidget';
-import DateFilter from './DateFilter'; 
+import DateFilter from './DateFilter';
 
 const Dashboard = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     
     const [user, setUser] = useState({ name: 'Guest' });
-    const [activeTab, setActiveTab] = useState('overview'); 
-    
+    const [activeTab, setActiveTab] = useState('overview');
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
-    
-    const [isProfileExpanded, setIsProfileExpanded] = useState(false); 
+    const [isProfileExpanded, setIsProfileExpanded] = useState(false);
     const [hasWallet, setHasWallet] = useState(false);
-
-    const [viewMode, setViewMode] = useState('all'); 
+    const [viewMode, setViewMode] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
 
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -51,15 +47,8 @@ const Dashboard = () => {
                 const res = await axios.get(`${API_URL}/api/records?month=${currentMonth}`, {
                     headers: { 'x-auth-token': token }
                 });
-                
-                if (res.data && res.data.wallet && res.data.wallet.limit > 0) {
-                    setHasWallet(true);
-                } else {
-                    setHasWallet(false);
-                }
-            } catch (err) {
-                console.error("Wallet check failed", err);
-            }
+                setHasWallet(res.data && res.data.wallet && res.data.wallet.limit > 0);
+            } catch (err) {}
         };
 
         const googleToken = searchParams.get('token');
@@ -70,7 +59,7 @@ const Dashboard = () => {
 
         const token = localStorage.getItem('token');
         if (!token) {
-            navigate('/'); 
+            navigate('/');
         } else {
             fetchUserProfile(token);
             checkWalletStatus(token);
@@ -84,7 +73,6 @@ const Dashboard = () => {
 
     const handleNavClick = (tab) => {
         setActiveTab(tab);
-        // Auto-close sidebar on mobile when a link is clicked
         if (window.innerWidth <= 768) setIsSidebarOpen(false);
     };
 
@@ -126,11 +114,8 @@ const Dashboard = () => {
                         </div>
                     )}
 
-                    <button 
-                        className={`wallet-nav-btn ${activeTab === 'wallet' ? 'active' : ''}`} 
-                        onClick={() => handleNavClick('wallet')}
-                    >
-                        <FaWallet /> 
+                    <button className={activeTab === 'wallet' ? 'active' : ''} onClick={() => handleNavClick('wallet')}>
+                        <FaWallet />
                         <span>{hasWallet ? 'Regulate Wallet' : 'Create Wallet'}</span>
                     </button>
                     
@@ -152,7 +137,9 @@ const Dashboard = () => {
                 </nav>
 
                 <div className="sidebar-footer">
-                    <button onClick={handleLogout} className="logout-btn"><FaSignOutAlt /> <span>Logout</span></button>
+                    <button onClick={handleLogout} className="logout-btn">
+                        <FaSignOutAlt /> <span>Logout</span>
+                    </button>
                 </div>
             </div>
 
@@ -160,20 +147,19 @@ const Dashboard = () => {
                 
                 <div className="top-bar">
                     <div className="header-left">
-                        {/* Mobile Menu Trigger (Visible only on mobile via CSS) */}
                         <div className="mobile-menu-trigger" onClick={() => setIsSidebarOpen(true)}>
                              <FaBars />
                         </div>
 
                         <div className="header-text-block">
                             <h2 className="page-title">
-                                {activeTab === 'overview' && `📈 ${user.name}'s Financial DNA`}
-                                {activeTab === 'wallet' && (hasWallet ? '💳 Daily Wallet' : '🆕 Setup Wallet')}
-                                {activeTab === 'profile-edit' && '✏️ Edit Monthly Record'}
-                                {activeTab === 'profile-history' && '📜 Transaction History'}
-                                {activeTab === 'profile-settings' && '⚙️ Settings'}
+                                {activeTab === 'overview' && `${user.name}'s Financial DNA`}
+                                {activeTab === 'wallet' && (hasWallet ? 'Daily Wallet' : 'Setup Wallet')}
+                                {activeTab === 'profile-edit' && 'Edit Monthly Record'}
+                                {activeTab === 'profile-history' && 'Transaction History'}
+                                {activeTab === 'profile-settings' && 'Settings'}
                                 {activeTab === 'advisory' && 'AI Advisor'}
-                                {activeTab === 'expense' && '💸 Expense Guardian'}
+                                {activeTab === 'expense' && 'Expense Guardian'}
                                 {activeTab === 'savings' && 'Savings Agent'}
                                 {activeTab === 'notifications' && 'Notifications'}
                             </h2>
@@ -221,14 +207,13 @@ const Dashboard = () => {
 
                     {activeTab === 'profile-edit' && <Profile userName={user.name} />}
                     {activeTab === 'profile-history' && <TransactionHistory />}
-                    
                     {activeTab === 'profile-settings' && (
                         <div className="view-content placeholder-view">
-                            <h2>⚙️ Settings</h2><p>Configuration options coming soon.</p>
+                            <h2>Settings</h2>
+                            <p>Configuration options coming soon.</p>
                         </div>
                     )}
                     
-                    {/* AGENTS */}
                     {activeTab === 'advisory' && <AdvisoryAgent/>}
                     {activeTab === 'expense' && <ExpenseAgent />}
                     {activeTab === 'savings' && <SavingAgent />}
