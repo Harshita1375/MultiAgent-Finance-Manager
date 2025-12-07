@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { 
-    FaHistory, FaCog, FaHome, FaUser, FaRobot, FaWallet, FaPiggyBank, FaBell, FaBars, FaSignOutAlt, FaUserCircle, FaLayerGroup, FaCalendarAlt, FaUserEdit, FaChevronDown, FaChevronUp, FaPlusCircle, FaslidersH 
+    FaHistory, FaCog, FaHome, FaUser, FaRobot, FaPiggyBank, FaBell, FaBars, 
+    FaSignOutAlt, FaUserCircle, FaLayerGroup, FaCalendarAlt, FaUserEdit, 
+    FaChevronDown, FaChevronUp, FaWallet, FaLayerGroup as FaExpenseIcon 
 } from 'react-icons/fa';
 import './Dashboard.css'; 
 import Profile from './Profile';
@@ -14,6 +16,7 @@ import Notification from './Notification';
 import SidebarBadge from './SidebarBadge';
 import AdvisoryAgent from './AdvisoryAgent';
 import WalletWidget from './WalletWidget';
+import DateFilter from './DateFilter'; 
 
 const Dashboard = () => {
     const [searchParams] = useSearchParams();
@@ -21,9 +24,11 @@ const Dashboard = () => {
     
     const [user, setUser] = useState({ name: 'Guest' });
     const [activeTab, setActiveTab] = useState('overview'); 
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const [isProfileExpanded, setIsProfileExpanded] = useState(false); 
     
+    // Default Sidebar State: Open on Desktop, Closed on Mobile
+    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+    
+    const [isProfileExpanded, setIsProfileExpanded] = useState(false); 
     const [hasWallet, setHasWallet] = useState(false);
 
     const [viewMode, setViewMode] = useState('all'); 
@@ -32,6 +37,32 @@ const Dashboard = () => {
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
     useEffect(() => {
+        const fetchUserProfile = async (token) => {
+            try {
+                const res = await axios.get(`${API_URL}/api/auth/user`, {
+                    headers: { 'x-auth-token': token }
+                });
+                if (res.data) setUser({ name: res.data.username });
+            } catch (err) { console.error(err); }
+        };
+
+        const checkWalletStatus = async (token) => {
+            try {
+                const currentMonth = new Date().toISOString().slice(0, 7);
+                const res = await axios.get(`${API_URL}/api/records?month=${currentMonth}`, {
+                    headers: { 'x-auth-token': token }
+                });
+                
+                if (res.data && res.data.wallet && res.data.wallet.limit > 0) {
+                    setHasWallet(true);
+                } else {
+                    setHasWallet(false);
+                }
+            } catch (err) {
+                console.error("Wallet check failed", err);
+            }
+        };
+
         const googleToken = searchParams.get('token');
         if (googleToken) {
             localStorage.setItem('token', googleToken);
@@ -43,35 +74,9 @@ const Dashboard = () => {
             navigate('/'); 
         } else {
             fetchUserProfile(token);
-            checkWalletStatus(token); 
+            checkWalletStatus(token);
         }
-    }, [searchParams, navigate]);
-
-    const fetchUserProfile = async (token) => {
-        try {
-            const res = await axios.get(`${API_URL}/api/auth/user`, {
-                headers: { 'x-auth-token': token }
-            });
-            if (res.data) setUser({ name: res.data.username });
-        } catch (err) { console.error(err); }
-    };
-
-    const checkWalletStatus = async (token) => {
-        try {
-            const currentMonth = new Date().toISOString().slice(0, 7);
-            const res = await axios.get(`${API_URL}/api/records?month=${currentMonth}`, {
-                headers: { 'x-auth-token': token }
-            });
-            
-            if (res.data && res.data.wallet && res.data.wallet.limit > 0) {
-                setHasWallet(true);
-            } else {
-                setHasWallet(false);
-            }
-        } catch (err) {
-            console.error("Wallet check failed", err);
-        }
-    };
+    }, [searchParams, navigate, API_URL]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -80,6 +85,7 @@ const Dashboard = () => {
 
     const handleNavClick = (tab) => {
         setActiveTab(tab);
+        // Auto-close sidebar on mobile when a link is clicked
         if (window.innerWidth <= 768) setIsSidebarOpen(false);
     };
 
@@ -135,7 +141,7 @@ const Dashboard = () => {
                         <FaRobot /> <span>Advisory Agent</span>
                     </button>
                     <button className={activeTab === 'expense' ? 'active' : ''} onClick={() => handleNavClick('expense')}>
-                        <FaLayerGroup /> <span>Expense Agent</span>
+                        <FaExpenseIcon /> <span>Expense Agent</span>
                     </button>
                     <button className={activeTab === 'savings' ? 'active' : ''} onClick={() => handleNavClick('savings')}>
                         <FaPiggyBank /> <span>Saving Agent</span>
@@ -155,15 +161,39 @@ const Dashboard = () => {
                 
                 <div className="top-bar">
                     <div className="header-left">
-                        <h2 className="page-title">
-                            {activeTab === 'overview' && `📈 ${user.name}'s Financial DNA`}
-                            {activeTab === 'wallet' && (hasWallet ? '💳 Daily Wallet' : '🆕 Setup Wallet')}
-                            {activeTab === 'profile-edit' && '✏️ Edit Monthly Record'}
-                            {activeTab === 'profile-history' && '📜 Transaction History'}
-                            {activeTab === 'expense' && '💸 Expense Guardian'}
-                            {activeTab === 'savings' && 'Savings Agent'}
-                            {activeTab === 'notifications' && 'Notifications'}
-                        </h2>
+                        {/* Mobile Menu Trigger (Visible only on mobile via CSS) */}
+                        <div className="mobile-menu-trigger" onClick={() => setIsSidebarOpen(true)}>
+                             <FaBars />
+                        </div>
+
+                        <div className="header-text-block">
+                            <h2 className="page-title">
+                                {activeTab === 'overview' && `📈 ${user.name}'s Financial DNA`}
+                                {activeTab === 'wallet' && (hasWallet ? '💳 Daily Wallet' : '🆕 Setup Wallet')}
+                                {activeTab === 'profile-edit' && '✏️ Edit Monthly Record'}
+                                {activeTab === 'profile-history' && '📜 Transaction History'}
+                                {activeTab === 'profile-settings' && '⚙️ Settings'}
+                                {activeTab === 'advisory' && 'AI Advisor'}
+                                {activeTab === 'expense' && '💸 Expense Guardian'}
+                                {activeTab === 'savings' && 'Savings Agent'}
+                                {activeTab === 'notifications' && 'Notifications'}
+                            </h2>
+                            
+                            {activeTab === 'overview' && (
+                                <p className="status-badge">
+                                    {viewMode === 'all' ? 'Combined History Analysis' : `Analysis for ${selectedMonth}`}
+                                </p>
+                            )}
+                        </div>
+
+                        {activeTab === 'overview' && (
+                            <DateFilter 
+                                viewMode={viewMode}
+                                setViewMode={setViewMode}
+                                selectedMonth={selectedMonth}
+                                setSelectedMonth={setSelectedMonth}
+                            />
+                        )}
                     </div>
 
                     <div className="user-info">
@@ -176,7 +206,6 @@ const Dashboard = () => {
                 </div>
 
                 <div className="content-area">
-                    
                     {activeTab === 'overview' && (
                         <Analytics 
                             userName={user.name} 
@@ -193,6 +222,12 @@ const Dashboard = () => {
 
                     {activeTab === 'profile-edit' && <Profile userName={user.name} />}
                     {activeTab === 'profile-history' && <TransactionHistory />}
+                    
+                    {activeTab === 'profile-settings' && (
+                        <div className="view-content placeholder-view">
+                            <h2>⚙️ Settings</h2><p>Configuration options coming soon.</p>
+                        </div>
+                    )}
                     
                     {/* AGENTS */}
                     {activeTab === 'advisory' && <AdvisoryAgent/>}

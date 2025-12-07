@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { 
     FaChartLine, FaWallet, FaPiggyBank, FaArrowUp, FaRegLightbulb,
-    FaArrowDown, FaClock, FaReceipt 
+    FaArrowDown, FaClock, FaReceipt, FaMoneyBillWave 
 } from 'react-icons/fa';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import './Analytics.css'; 
@@ -37,6 +37,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
             const resStats = await axios.get(`${API_URL}/api/analytics${params}`, {
                 headers: { 'x-auth-token': token }
             });
+            
             let planData = null;
             try {
                 const resPlan = await axios.get(`${API_URL}/api/agent/advisory/plan`, {
@@ -65,6 +66,15 @@ const Analytics = ({ viewMode, selectedMonth }) => {
     const recentTransactions = stats.recentTransactions || [];
     const upcomingTransactions = stats.upcomingTransactions || [];
 
+    const efficiency = advisoryPlan?.improvement?.percentage || 0;
+    const potentialSave = advisoryPlan?.improvement?.savedAmount || 0;
+
+    const formatDate = (dateString) => {
+        if (dateString === 'Due soon') return dateString;
+        const options = { month: 'short', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    };
+
     const getLast7DaysLabels = () => {
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const labels = [];
@@ -87,13 +97,85 @@ const Analytics = ({ viewMode, selectedMonth }) => {
         }]
     };
 
+    // --- SHADED GRADIENT CHART CONFIG ---
     const cashFlowData = {
         labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], 
         datasets: [
-            { label: 'Income', data: Array(4).fill(income), borderColor: '#10b981', tension: 0.4 },
-            { label: 'Expenses', data: [spent * 0.2, spent * 0.3, spent * 0.25, spent * 0.25], borderColor: '#ef4444', tension: 0.4 },
-            { label: 'Savings', data: [saved * 0.2, saved * 0.25, saved * 0.25, saved * 0.3], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true }
+            {
+                label: 'Income',
+                data: Array(4).fill(income), 
+                borderColor: '#10b981', 
+                borderWidth: 2,
+                pointRadius: 0,
+                borderDash: [5, 5],
+                fill: false
+            },
+            {
+                label: 'Expenses',
+                data: [spent * 0.2, spent * 0.45, spent * 0.85, spent], 
+                borderColor: '#f59e0b', 
+                backgroundColor: (context) => {
+                    const ctx = context.chart.ctx;
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                    gradient.addColorStop(0, 'rgba(245, 158, 11, 0.6)');
+                    gradient.addColorStop(1, 'rgba(245, 158, 11, 0.0)');
+                    return gradient;
+                },
+                borderWidth: 3,
+                tension: 0.4, 
+                fill: true,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#f59e0b',
+                pointRadius: 5
+            },
+            {
+                label: 'Savings Trend',
+                data: [saved * 0.1, saved * 0.3, saved * 0.65, saved], 
+                borderColor: '#8b5cf6', 
+                backgroundColor: (context) => {
+                    const ctx = context.chart.ctx;
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.6)'); 
+                    gradient.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+                    return gradient;
+                },
+                borderWidth: 3,
+                tension: 0.4, 
+                fill: true,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#8b5cf6',
+                pointRadius: 5
+            }
         ]
+    };
+
+    const lineOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 8 } },
+            tooltip: { 
+                mode: 'index', 
+                intersect: false,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                titleColor: '#1f2937',
+                bodyColor: '#4b5563',
+                borderColor: '#e5e7eb',
+                borderWidth: 1
+            }
+        },
+        scales: {
+            y: { 
+                beginAtZero: true, 
+                grid: { borderDash: [5, 5], color: '#f3f4f6' },
+                ticks: { font: { size: 11 } }
+            },
+            x: { 
+                grid: { display: false },
+                ticks: { font: { size: 11 } }
+            }
+        },
+        interaction: { mode: 'nearest', axis: 'x', intersect: false }
     };
 
     const distributionData = {
@@ -101,31 +183,25 @@ const Analytics = ({ viewMode, selectedMonth }) => {
         datasets: [{
             data: [breakdown.fixed, breakdown.wants, breakdown.savings],
             backgroundColor: ['#3b82f6', '#f59e0b', '#10b981'],
-            borderWidth: 0
+            borderWidth: 0,
+            hoverOffset: 5
         }]
-    };
-
-    const efficiency = advisoryPlan?.improvement?.percentage || 0;
-    const potentialSave = advisoryPlan?.improvement?.savedAmount || 0;
-
-    const formatDate = (dateString) => {
-        if (dateString === 'Due soon') return dateString;
-        const options = { month: 'short', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
     return (
         <div className="analytics-container">
             
             <div className="kpi-grid">
+                
                 <div className="kpi-card glass-blue">
-                    <div className="kpi-icon"><FaChartLine /></div>
+                    <div className="kpi-icon"><FaMoneyBillWave /></div>
                     <div className="kpi-info">
-                        <small>Total Net Flow</small>
-                        <h3>₹{(income - spent).toLocaleString()}</h3>
-                        <span className="badge positive"><FaArrowUp /> Cash Positive</span>
+                        <small>Total Earnings</small>
+                        <h3>₹{income.toLocaleString()}</h3>
+                        <span className="badge positive"><FaArrowUp /> Income Source</span>
                     </div>
                 </div>
+
                 <div className="kpi-card glass-purple">
                     <div className="kpi-icon"><FaRegLightbulb /></div>
                     <div className="kpi-info">
@@ -134,6 +210,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                         <span className="sub-text">Potential: +₹{potentialSave.toLocaleString()}</span>
                     </div>
                 </div>
+
                 <div className="kpi-card glass-orange">
                     <div className="kpi-icon"><FaWallet /></div>
                     <div className="kpi-info">
@@ -142,12 +219,13 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                         <span className="badge neutral">Real-time</span>
                     </div>
                 </div>
+
                 <div className="kpi-card glass-green">
                     <div className="kpi-icon"><FaPiggyBank /></div>
                     <div className="kpi-info">
-                        <small>Savings Rate</small>
-                        <h3>{Math.round((saved / (income || 1)) * 100)}%</h3>
-                        <span className="sub-text">Target: 20%</span>
+                        <small>Total Saved</small>
+                        <h3>₹{saved.toLocaleString()}</h3>
+                        <span className="sub-text">Rate: {Math.round((saved / (income || 1)) * 100)}%</span>
                     </div>
                 </div>
             </div>
@@ -156,14 +234,14 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                 <div className="chart-card large">
                     <div className="card-header"><h4>Cash Flow Trends</h4></div>
                     <div className="chart-container-lg">
-                        <Line data={cashFlowData} options={{ maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { grid: { borderDash: [5, 5] } } } }} />
+                        <Line data={cashFlowData} options={lineOptions} />
                     </div>
                 </div>
                 <div className="side-charts-col">
                     <div className="chart-card small">
                         <h4>Wallet Pulse (Last 7 Days)</h4>
                         <div className="chart-container-sm">
-                            <Bar data={walletChartData} options={{ maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } }} />
+                            <Bar data={walletChartData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { display: false } } }} />
                         </div>
                     </div>
                     <div className="chart-card small row-flex">
@@ -183,23 +261,14 @@ const Analytics = ({ viewMode, selectedMonth }) => {
             <div className="transactions-grid">
                 
                 <div className="transaction-card">
-                    <div className="card-header">
-                        <h4><FaReceipt /> Recent Activity</h4>
-                    </div>
+                    <div className="card-header"><h4><FaReceipt /> Recent Activity</h4></div>
                     <div className="transaction-list">
                         {recentTransactions.length > 0 ? (
                             recentTransactions.map(tx => (
                                 <div key={tx.id} className="transaction-item">
-                                    <div className={`tx-icon ${tx.type || 'want'}`}>
-                                        <FaArrowDown />
-                                    </div>
-                                    <div className="tx-details">
-                                        <span className="tx-title">{tx.title}</span>
-                                        <span className="tx-date">{formatDate(tx.date)}</span>
-                                    </div>
-                                    <div className="tx-amount expense">
-                                        -₹{tx.amount.toLocaleString()}
-                                    </div>
+                                    <div className={`tx-icon ${tx.type || 'want'}`}><FaArrowDown /></div>
+                                    <div className="tx-details"><span className="tx-title">{tx.title}</span><span className="tx-date">{formatDate(tx.date)}</span></div>
+                                    <div className="tx-amount expense">-₹{tx.amount.toLocaleString()}</div>
                                 </div>
                             ))
                         ) : <p className="no-data-text">No recent transactions.</p>}
@@ -207,26 +276,17 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                 </div>
 
                 <div className="transaction-card">
-                    <div className="card-header">
-                        <h4><FaClock /> Upcoming Payments</h4>
-                    </div>
+                    <div className="card-header"><h4><FaClock /> Upcoming Payments</h4></div>
                     <div className="transaction-list">
                         {upcomingTransactions.length > 0 ? (
                             upcomingTransactions.map(tx => (
                                 <div key={tx.id} className="transaction-item">
-                                    <div className="tx-icon upcoming">
-                                        <FaClock />
-                                    </div>
-                                    <div className="tx-details">
-                                        <span className="tx-title">{tx.title}</span>
-                                        <span className="tx-date">{tx.date}</span>
-                                    </div>
-                                    <div className="tx-amount">
-                                        ₹{tx.amount.toLocaleString()}
-                                    </div>
+                                    <div className="tx-icon upcoming"><FaClock /></div>
+                                    <div className="tx-details"><span className="tx-title">{tx.title}</span><span className="tx-date">{tx.date}</span></div>
+                                    <div className="tx-amount">₹{tx.amount.toLocaleString()}</div>
                                 </div>
                             ))
-                        ) : <p className="no-data-text">No upcoming payments scheduled.</p>}
+                        ) : <p className="no-data-text">No upcoming payments.</p>}
                     </div>
                 </div>
             </div>
