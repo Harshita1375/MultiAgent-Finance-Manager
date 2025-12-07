@@ -401,36 +401,27 @@
     }
 }
 
+
 @media (max-width: 768px) {
-    .dashboard-layout {
-        position: relative;
-    }
+    .dashboard-layout { position: relative; }
+
     .sidebar {
         position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
+        left: 0; top: 0; bottom: 0;
         z-index: 1000;
         width: 280px;
         transform: translateX(-100%);
         box-shadow: 10px 0 30px rgba(0,0,0,0.3);
     }
-    .sidebar.open {
-        transform: translateX(0);
-    }
-    .sidebar.closed {
-        transform: translateX(-100%);
-        width: 280px;
-    }
-    .mobile-menu-trigger {
-        display: block;
-    }
-    .sidebar-header .toggle-btn {
-        display: none;
-    }
-    .main-content-wrapper {
-        width: 100%;
-    }
+
+    .sidebar.open { transform: translateX(0); }
+    .sidebar.closed { transform: translateX(-100%); width: 280px; }
+
+    .mobile-menu-trigger { display: block; }
+    .sidebar-header .toggle-btn { display: none; }
+
+    .main-content-wrapper { width: 100%; }
+
     .top-bar {
         height: auto;
         min-height: 80px;
@@ -438,44 +429,54 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 15px;
+        position: relative; 
     }
+
     .header-left {
         gap: 15px;
         width: 100%;
+        padding-top: 10px;
     }
+
     .user-info {
-        display: none;
+        display: flex; 
+        position: absolute; 
+        top: 15px;
+        right: 20px;
+        background: transparent;
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        gap: 10px;
     }
+    
+    .user-text {
+        display: flex; 
+    }
+
+    .welcome-sub {
+        display: none; 
+    }
+
+    .user-name {
+        font-size: 0.9rem;
+    }
+
+    .user-avatar {
+        font-size: 2rem; 
+    }
+
     .content-area {
         padding: 15px;
         padding-bottom: 80px;
     }
+    
     .view-toggle-capsule {
         width: 100%;
-        justify-content: center;
-    }
-    .sidebar-wallet-wrapper .wallet-card {
-        height: auto;
-        min-height: 150px;
-    }
-    .wallet-page-container {
-        height: auto;
-        padding-top: 20px;
-    }
-}
-
-@media (max-width: 480px) {
-    .page-title {
-        font-size: 1.1rem;
-    }
-    .toggle-btn {
-        padding: 6px 12px;
-        font-size: 0.8rem;
-    }
-    .header-date-picker {
-        width: 100%;
-    }
-    .view-toggle-capsule {
+        justify-content: flex-start; 
         flex-wrap: wrap;
     }
+
+    .sidebar-wallet-wrapper .wallet-card { height: auto; min-height: 150px; }
+    .wallet-page-container { height: auto; padding-top: 20px; }
 }
