@@ -1,96 +1,106 @@
 const MonthlyRecord = require('../models/MonthlyRecord');
-const mongoose = require('mongoose'); 
+const Expense = require('../models/Expense');
 
+// ✅ Function name kept as 'getUserAnalytics' to match your routes
 exports.getUserAnalytics = async (req, res) => {
     try {
-        const { month } = req.query; 
         const userId = req.user.id;
-        
-        let finalData = {
-            totals: { income: 0, fixedExpenses: 0, savings: 0, freeCash: 0 },
-            scores: { savingsRate: 0, expenseControl: 0, liquidity: 0 },
-            insight: "Add records in Profile to see analytics."
-        };
+        const { month } = req.query; // e.g., "2025-12" or "all"
 
-        let rawData = {
-            income: 0,
-            expenses: { emi:0, rent:0, grocery:0, electricity:0, otherBills:0, subscriptions:0, petrol:0, otherExpense:0 },
-            savings: { sip:0, fdRd:0, gold:0 }
-        };
-
+        // 1. Fetch Fixed Records (For Totals)
+        let recordQuery = { user: userId };
         if (month && month !== 'all') {
-            const record = await MonthlyRecord.findOne({ user: userId, month });
-            if (record) {
-                rawData = record.toObject();
-            }
-        } else {
-            const agg = await MonthlyRecord.aggregate([
-                { 
-                    $match: { 
-                        user: new mongoose.Types.ObjectId(userId) 
-                    } 
-                },
-                {
-                    $group: {
-                        _id: null,
-                        totalIncome: { $sum: "$income" },
-                        totalEmi: { $sum: "$expenses.emi" },
-                        totalRent: { $sum: "$expenses.rent" },
-                        totalGrocery: { $sum: "$expenses.grocery" },
-                        totalElectricity: { $sum: "$expenses.electricity" },
-                        totalOtherBills: { $sum: "$expenses.otherBills" },
-                        totalSubs: { $sum: "$expenses.subscriptions" },
-                        totalPetrol: { $sum: "$expenses.petrol" },
-                        totalOtherExp: { $sum: "$expenses.otherExpense" },
-                        totalSip: { $sum: "$savings.sip" },
-                        totalFdRd: { $sum: "$savings.fdRd" },
-                        totalGold: { $sum: "$savings.gold" },
-                    }
-                }
-            ]);
-
-            if (agg.length > 0) {
-                const res = agg[0];
-                rawData.income = res.totalIncome;
-                rawData.expenses = {
-                    emi: res.totalEmi, rent: res.totalRent, grocery: res.totalGrocery,
-                    electricity: res.totalElectricity, otherBills: res.totalOtherBills,
-                    subscriptions: res.totalSubs, petrol: res.totalPetrol, otherExpense: res.totalOtherExp
-                };
-                rawData.savings = {
-                    sip: res.totalSip, fdRd: res.totalFdRd, gold: res.totalGold
-                };
-            }
+            recordQuery.month = month;
         }
+        const records = await MonthlyRecord.find(recordQuery);
 
-        const totalFixedExpenses = Object.values(rawData.expenses || {}).reduce((a, b) => a + (Number(b) || 0), 0);
-        const totalSavings = Object.values(rawData.savings || {}).reduce((a, b) => a + (Number(b) || 0), 0);
-        const income = rawData.income || 0;
-        const freeCash = Math.max(0, income - (totalFixedExpenses + totalSavings));
-        
-        const safeIncome = income > 0 ? income : 1;
-        const savingsRate = Math.min(((totalSavings / safeIncome) * 100), 100);
-        const expenseRatio = Math.min(((totalFixedExpenses / safeIncome) * 100), 100);
+        // 2. Fetch All Expenses (For Charts/Trends)
+        const expenses = await Expense.find({ user: userId });
 
-        finalData = {
+        // --- CALCULATE TOTALS ---
+        let totalIncome = 0;
+        let totalFixed = 0;
+        let totalSavings = 0;
+        let totalWalletSpent = 0; // This will track your "Wallet Burn"
+
+        records.forEach(rec => {
+            totalIncome += (rec.income || 0);
+            
+            // Sum Fixed Expenses (Rent, EMI, Bills, etc.)
+            const exp = rec.expenses || {};
+            totalFixed += (exp.rent||0) + (exp.emi||0) + (exp.grocery||0) + (exp.electricity||0) + (exp.schoolFees||0) + (exp.otherBills||0) + (exp.subscriptions||0);
+            
+            // Sum Savings (SIP, Gold, Cash)
+            const sav = rec.savings || {};
+            totalSavings += (sav.sip||0) + (sav.fdRd||0) + (sav.gold||0) + (sav.cash||0);
+
+            // --- CRITICAL FIX: Read Wallet Spend directly from Record ---
+            // This ensures the KPI matches your Wallet Widget exactly
+            if (rec.wallet) {
+                totalWalletSpent += (rec.wallet.spent || 0);
+            }
+        });
+
+        // --- CHART DATA 1: WALLET PULSE (Last 7 Days) ---
+        // Filter for expenses created by the Wallet Widget
+        const walletExpenses = expenses.filter(e => 
+            e.title.startsWith('Quick:') || 
+            e.title.startsWith('Wallet:')
+        );
+
+        // Initialize array for last 7 days (Index 6 = Today, Index 0 = 6 days ago)
+        const dailyWalletData = Array(7).fill(0); 
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        walletExpenses.forEach(exp => {
+            const expDate = new Date(exp.date);
+            expDate.setHours(0,0,0,0);
+            
+            const diffTime = today - expDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            // If the expense happened within the last 7 days
+            if (diffDays >= 0 && diffDays < 7) {
+                dailyWalletData[6 - diffDays] += exp.amount;
+            }
+        });
+
+        // --- RESPONSE STRUCTURE ---
+        // We map the new calculated values to the structure your frontend expects
+        res.json({
+            // Core Totals (Matches new frontend)
+            totalIncome,
+            totalSpent: totalFixed + totalWalletSpent, 
+            totalSaved: totalSavings,
+            
+            // Old Structure Support (To prevent crashes if frontend uses 'totals')
             totals: {
-                income,
-                fixedExpenses: totalFixedExpenses,
+                income: totalIncome,
+                fixedExpenses: totalFixed + totalWalletSpent,
                 savings: totalSavings,
-                freeCash
+                freeCash: totalWalletSpent // or calculated free cash
             },
-            scores: {
-                savingsRate: Math.round(savingsRate),
-                expenseControl: Math.round(100 - expenseRatio),
-                liquidity: freeCash > 0 ? 80 : 20
-            },
-            insight: freeCash < 0 ? "⚠️ Expenses exceed income!" : "✅ Financials look stable."
-        };
 
-        res.json(finalData);
+            // Detailed Breakdown for Graphs
+            breakdown: {
+                fixed: totalFixed,
+                wants: totalWalletSpent, // We use Wallet Spend as the main "Wants" metric
+                savings: totalSavings
+            },
+
+            // History Data for Charts
+            walletHistory: dailyWalletData,
+            
+            // Financial Health Scores
+            scores: {
+                savingsRate: totalIncome > 0 ? Math.round((totalSavings / totalIncome) * 100) : 0,
+                liquidity: totalSavings > 0 ? 80 : 20
+            }
+        });
 
     } catch (err) {
-        console.error("Analytics Error:", err.message);
+        console.error("Analytics Error:", err);
         res.status(500).send('Server Error');
     }
 };
