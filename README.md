@@ -6,29 +6,53 @@ A smart, AI-driven personal finance assistant that helps users manage monthly sa
 
 The application consists of three intelligent agents working together:
 
-### 1. 📊 Savings Agent
+### 🚀 Features
 
-Tracks monthly income, expenses, and savings (SIP, FD, Gold).
+The application is powered by a multi-agent system where each agent specializes in a specific aspect of financial management:
 
-Analyzes your financial health.
+## 🚀 Features
 
-Output: projects future wealth over 5, 10, and 20 years and provides actionable saving advice (e.g., "Shift FD to SIP for better returns").
+The application operates on a **Multi-Agent Architecture**, where specialized AI agents collaborate to manage different aspects of your financial life.
 
-### 2. 📈 Trading Agent
+### 1. 🤖 Advisory Agent (The Brain)
+The central intelligence hub that synthesizes data from all other agents to create your **"Fiscal Efficiency Profile"**.
+* **Financial DNA:** Analyzes 6 months of history to calculate your efficiency score (e.g., "+4.1% Potential").
+* **"Can I Afford It?" Simulator:** A real-time decision engine that checks your liquid cash against potential purchases.
+* **Goal Celebration:** Tracks goal progress (e.g., "Thailand Trip") and triggers confetti/alerts upon completion.
 
-Scans real-time market data to suggest safe, affordable investment opportunities.
+### 2. 🛡️ Expense Agent (The Guardian)
+Focuses on monthly discipline and categorization (Needs vs. Wants).
+* **Smart Categorization:** Automatically sorts transactions into "Fixed Needs" (Rent, EMI) and "Lifestyle Wants" (Party, Dining).
+* **Limit Tracker:** Visualizes your spending against the 50/30/20 rule.
+* **Spending Feedback:** Awards badges like "Star Saver" if you stay within your monthly budget.
 
-Filters stocks based on your actual "Free Cash" (Money left after expenses and savings).
+### 3. 👛 Wallet Manager (The Velocity Tracker)
+*A dedicated tool to manage daily cash flow intensity.*
+* **Burn Rate Monitor:** Calculates your "Daily Spend" (e.g., ₹800/day) to keep you from running out of cash before month-end.
+* **7-Day Trend:** Visualizes your immediate spending velocity to spot "heavy" spending days instantly.
+* **Quick Add:** Rapid entry point for daily manual transactions.
 
-Core Logic: Prioritizes "Bluechip" stability and Defensive sectors over risky gains.
+### 4. 🐷 Saving Agent (The Wealth Builder)
+A comprehensive module that handles both **Long-term Security** and **Active Investing**.
 
-See Stock Selection Strategy for the detailed algorithm.
+#### 📉 Wealth & Security
+* **Wealth Projection:** Forecasts net worth over 5, 10, and 20 years based on current SIP/FD/Gold allocations.
+* **Runway Calculator:** Calculates exactly how many months you can survive without income based on liquid assets.
+* **Asset Allocation:** Suggests optimal splits between safe assets (FD/Gold) and growth assets (Mutual Funds).
 
-### 3. 🏠 Asset Analysis Agent
+#### 📈 Smart Trading Plans (Integrated Feature)
+* **Real-Time Market Data:** Scans live stock market data (via Yahoo Finance) to identify "Buy" opportunities.
+* **Safety-First Engine:** Suggests investments **only** if you have unallocated "Free Cash" (Money left after Needs + Savings).
+* **Defensive Strategy:** Filters for stable Bluechip stocks and ETFs (e.g., Nifty 50, Gold BeES) rather than risky speculative stocks.
 
-A calculator to evaluate big financial decisions (e.g., "Buying a House vs. Renting" or "Buying a Car").
+### 5. 🔔 Notification Agent (The Watchdog)
+A proactive alert system ensuring you never miss a financial beat.
+* **Instant Alerts:** Triggers real-time notifications for "Goal Achieved," "Spending Spikes," or "Investment Opportunities."
+* **Mid-Month Check-ins:** Warns you if your savings rate is lagging behind schedule (e.g., "It's the 15th and you've saved <10%").
 
-Output: Determines if a purchase is a "Wealth Creator" or a "Liability" based on EMI, tenure, and depreciation/appreciation rates.
+### 6. ⚙️ Dynamic Profile Engine
+* **Live Recalibration:** Update your income, fixed costs (Rent/EMI), or lifestyle budget at any time via Settings.
+* **Instant Context Switch:** When you update your profile, all Agents immediately recalculate their advice, forecasts, and daily limits based on the new data.
 
 ## ⚡ Quick Start (Demo Access)
 
