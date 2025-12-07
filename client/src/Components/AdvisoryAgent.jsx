@@ -8,11 +8,10 @@ import './AdvisoryAgent.css';
 
 const AdvisoryAgent = () => {
     const [data, setData] = useState(null);
-    const [plan, setPlan] = useState(null); // Stores the AI Plan data
-    const [view, setView] = useState('dashboard'); // 'dashboard', 'planner', 'addGoal'
+    const [plan, setPlan] = useState(null); 
+    const [view, setView] = useState('dashboard'); 
     const [loadingPlan, setLoadingPlan] = useState(false);
     
-    // Form States
     const [newGoal, setNewGoal] = useState({ title: '', targetAmount: '' });
     const [simCost, setSimCost] = useState('');
     const [simResult, setSimResult] = useState(null);
@@ -35,7 +34,6 @@ const AdvisoryAgent = () => {
         }
     };
 
-    // --- FETCH AI PLAN ---
     const generatePlan = async () => {
         setLoadingPlan(true);
         const token = localStorage.getItem('token');
@@ -92,7 +90,6 @@ const AdvisoryAgent = () => {
                     </div>
                 </div>
                 
-                {/* View Switcher */}
                 <div className="view-switcher">
                     <button 
                         className={view === 'dashboard' ? 'active' : ''} 
@@ -110,11 +107,9 @@ const AdvisoryAgent = () => {
                 </div>
             </div>
 
-            {/* --- VIEW 1: DASHBOARD --- */}
             {view === 'dashboard' && (
                 <div className="advisory-grid">
                     
-                    {/* 1. AI ACTION ITEMS */}
                     <div className="advice-section">
                         <h3>📢 Priority Action Items</h3>
                         {data.advice.length === 0 ? (
@@ -132,7 +127,6 @@ const AdvisoryAgent = () => {
                         )}
                     </div>
 
-                    {/* 2. GOAL TRACKER */}
                     <div className="goal-section">
                         <div className="goal-header">
                             <h3><FaBullseye /> Financial Goals</h3>
@@ -159,7 +153,6 @@ const AdvisoryAgent = () => {
                         </div>
                     </div>
 
-                    {/* 3. AFFORDABILITY SIMULATOR */}
                     <div className="simulator-section">
                         <h3><FaShoppingCart /> "Can I Afford It?"</h3>
                         <p>Enter price to check feasibility.</p>
@@ -181,7 +174,6 @@ const AdvisoryAgent = () => {
                 </div>
             )}
 
-            {/* --- VIEW 2: ADD GOAL FORM --- */}
             {view === 'addGoal' && (
                 <div className="add-goal-container">
                     <h3>Create New Goal</h3>
@@ -202,7 +194,6 @@ const AdvisoryAgent = () => {
                 </div>
             )}
 
-            {/* --- VIEW 3: AI PLANNER --- */}
             {view === 'planner' && plan && (
                 <div className="planner-container">
                     <div className="planner-intro">
@@ -211,7 +202,6 @@ const AdvisoryAgent = () => {
                     </div>
 
                     <div className="plan-grid">
-                        {/* CURRENT STATE */}
                         <div className="plan-column">
                             <h4>Current Reality</h4>
                             <div className="p-card">
@@ -240,7 +230,6 @@ const AdvisoryAgent = () => {
 
                         <div className="arrow-col"><FaArrowRight /></div>
 
-                        {/* OPTIMIZED STATE */}
                         <div className="plan-column">
                             <h4>AI Recommended Target</h4>
                             <div className="p-card optimized">
@@ -269,10 +258,9 @@ const AdvisoryAgent = () => {
                         </div>
                     </div>
 
-                    {/* STRATEGY & IMPACT */}
                     <div className="plan-impact-section">
                         <div className="strategies">
-                            <h5><FaRegLightbulb /> Optimization Strategies Used:</h5>
+                            <h5><FaRegLightbulb /> Optimization <br/>Strategies Used:</h5>
                             <ul>
                                 {plan.improvement.steps.length > 0 ? (
                                     plan.improvement.steps.map((step, i) => <li key={i}>{step}</li>)
