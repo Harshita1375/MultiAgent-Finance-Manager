@@ -5,12 +5,14 @@ const {
     getAdvisoryData, 
     addGoal, 
     updateGoalProgress, 
-    checkAffordability 
+    checkAffordability,
+    generateMonthlyPlan
 } = require('../controllers/advisoryController');
 
 router.get('/dashboard', auth, getAdvisoryData);
 router.post('/goals', auth, addGoal);
 router.put('/goals/add-funds', auth, updateGoalProgress);
 router.post('/affordability', auth, checkAffordability);
+router.get('/plan', auth, generateMonthlyPlan);
 
 module.exports = router;
