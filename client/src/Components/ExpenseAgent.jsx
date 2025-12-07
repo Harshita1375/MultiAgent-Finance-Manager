@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaShieldAlt, FaExclamationTriangle, FaCheckCircle, FaList, FaChartPie, FaRedo, FaLightbulb, FaExclamationCircle, FaTrophy, FaChartLine } from 'react-icons/fa';
+import { FaShieldAlt, FaList, FaChartPie, FaLightbulb, FaExclamationCircle, FaTrophy, FaChartLine } from 'react-icons/fa';
 import { Doughnut } from 'react-chartjs-2';
 import DateFilter from './DateFilter'; 
 import './ExpenseAgent.css';
@@ -8,7 +8,7 @@ import './ExpenseAgent.css';
 const ExpenseAgent = () => {
     const [analysis, setAnalysis] = useState(null);
     const [loading, setLoading] = useState(true);
-        const [viewMode, setViewMode] = useState('month'); 
+    const [viewMode, setViewMode] = useState('month'); 
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
     const [customLimits, setCustomLimits] = useState({ needs: 50, wants: 30 }); 
 
@@ -77,7 +77,6 @@ const ExpenseAgent = () => {
                 </div>
 
                 <div className="view-controls">
-
                     <DateFilter 
                         viewMode={viewMode} 
                         setViewMode={setViewMode}
@@ -142,22 +141,24 @@ const ExpenseAgent = () => {
             <div className="table-section">
                 <h3>📜 {viewMode === 'all' ? 'All Transactions (History)' : 'Monthly Transactions'}</h3>
                 {transactions && transactions.length > 0 ? (
-                    <table className="expense-table">
-                        <thead>
-                            <tr><th>Date</th><th>Item</th><th>Category</th><th>Type</th><th>Amount</th></tr>
-                        </thead>
-                        <tbody>
-                            {transactions.map((t, index) => (
-                                <tr key={index}>
-                                    <td>{new Date(t.date).toLocaleDateString()}</td>
-                                    <td>{t.title} {t.isFixed && <span className="fixed-tag">(Fixed)</span>}</td>
-                                    <td><span className="badge-cat">{t.category}</span></td>
-                                    <td><span className={`badge-type ${t.type}`}>{t.type ? t.type.toUpperCase() : 'EXPENSE'}</span></td>
-                                    <td className="amount-col">₹{t.amount}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <div className="table-wrapper">
+                        <table className="expense-table">
+                            <thead>
+                                <tr><th>Date</th><th>Item</th><th>Category</th><th>Type</th><th>Amount</th></tr>
+                            </thead>
+                            <tbody>
+                                {transactions.map((t, index) => (
+                                    <tr key={index}>
+                                        <td>{new Date(t.date).toLocaleDateString()}</td>
+                                        <td>{t.title} {t.isFixed && <span className="fixed-tag">(Fixed)</span>}</td>
+                                        <td><span className="badge-cat">{t.category}</span></td>
+                                        <td><span className={`badge-type ${t.type}`}>{t.type ? t.type.toUpperCase() : 'EXPENSE'}</span></td>
+                                        <td className="amount-col">₹{t.amount}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 ) : <p className="no-trans">No expenses found for this period.</p>}
             </div>
         </div>

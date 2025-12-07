@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaFileDownload, FaHistory, FaWallet, FaReceipt, FaTrash } from 'react-icons/fa';
+import { FaFileDownload, FaHistory, FaWallet, FaReceipt } from 'react-icons/fa';
 import DateFilter from './DateFilter';
 import './TransactionHistory.css';
 
@@ -15,11 +15,9 @@ const TransactionHistory = () => {
         const fetchHistory = async () => {
             setLoading(true);
             const token = localStorage.getItem('token');
-            // Assuming your backend handles 'all' or specific month
             const queryParam = viewMode === 'all' ? 'all' : selectedMonth;
             
             try {
-                // Fetch merged data (Fixed + Manual + Wallet)
                 const res = await axios.get(`${API_URL}/api/records/analyze?month=${queryParam}`, {
                     headers: { 'x-auth-token': token }
                 });
@@ -64,20 +62,21 @@ const TransactionHistory = () => {
         <div className="profile-container">
             <div className="profile-header">
                 <div className="header-top-row">
-                    <h2><FaHistory /> Transaction History</h2>
+                    <div className="title-group">
+                        <h2><FaHistory /> Transaction History</h2>
+                    </div>
                     
-                    <DateFilter 
-                        viewMode={viewMode} 
-                        setViewMode={setViewMode}
-                        selectedMonth={selectedMonth}
-                        setSelectedMonth={setSelectedMonth}
-                    />
-                </div>
-                
-                <div style={{ marginTop: '20px', textAlign: 'right' }}>
-                    <button className="download-btn" onClick={downloadCSV}>
-                        <FaFileDownload /> Download CSV
-                    </button>
+                    <div className="controls-group">
+                        <DateFilter 
+                            viewMode={viewMode} 
+                            setViewMode={setViewMode}
+                            selectedMonth={selectedMonth}
+                            setSelectedMonth={setSelectedMonth}
+                        />
+                        <button className="download-btn" onClick={downloadCSV}>
+                            <FaFileDownload /> <span className="btn-text">Download CSV</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -95,17 +94,16 @@ const TransactionHistory = () => {
                         </thead>
                         <tbody>
                             {transactions.length > 0 ? transactions.map((t, idx) => {
-                                // --- WALLET DETECTION LOGIC ---
                                 const isWallet = t.title.startsWith('Wallet:') || t.title.startsWith('Quick:');
-                                // Remove the prefix for cleaner display
                                 const cleanTitle = t.title.replace('Wallet:', '').replace('Quick:', '').trim();
 
                                 return (
                                     <tr key={idx}>
-                                        <td className="date-cell">{new Date(t.date).toLocaleDateString()}</td>
-                                        <td>
+                                        <td data-label="Date" className="date-cell">
+                                            {new Date(t.date).toLocaleDateString()}
+                                        </td>
+                                        <td data-label="Description">
                                             <div className="t-name-wrapper">
-                                                {/* Show Blue Wallet Icon or Grey Receipt Icon */}
                                                 {isWallet ? (
                                                     <FaWallet className="icon-wallet" title="Paid via Wallet" />
                                                 ) : (
@@ -114,13 +112,17 @@ const TransactionHistory = () => {
                                                 <span className={isWallet ? 'wallet-text' : ''}>{cleanTitle}</span>
                                             </div>
                                         </td>
-                                        <td><span className="badge-cat">{t.category}</span></td>
-                                        <td>
+                                        <td data-label="Category">
+                                            <span className="badge-cat">{t.category}</span>
+                                        </td>
+                                        <td data-label="Type">
                                             <span className={`badge-type ${t.type || 'want'}`}>
                                                 {t.type ? t.type.toUpperCase() : 'EXPENSE'}
                                             </span>
                                         </td>
-                                        <td className="amount-col">₹{t.amount.toLocaleString()}</td>
+                                        <td data-label="Amount" className="amount-col">
+                                            ₹{t.amount.toLocaleString()}
+                                        </td>
                                     </tr>
                                 );
                             }) : (
