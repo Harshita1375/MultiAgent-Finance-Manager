@@ -16,6 +16,7 @@ import SidebarBadge from './SidebarBadge';
 import AdvisoryAgent from './AdvisoryAgent';
 import WalletWidget from './WalletWidget';
 import DateFilter from './DateFilter';
+import Settings from './Settings';
 
 const Dashboard = () => {
     const [searchParams] = useSearchParams();
@@ -207,12 +208,7 @@ const Dashboard = () => {
 
                     {activeTab === 'profile-edit' && <Profile userName={user.name} />}
                     {activeTab === 'profile-history' && <TransactionHistory />}
-                    {activeTab === 'profile-settings' && (
-                        <div className="view-content placeholder-view">
-                            <h2>Settings</h2>
-                            <p>Configuration options coming soon.</p>
-                        </div>
-                    )}
+                    {activeTab === 'profile-settings' && <Settings/>}
                     
                     {activeTab === 'advisory' && <AdvisoryAgent/>}
                     {activeTab === 'expense' && <ExpenseAgent />}

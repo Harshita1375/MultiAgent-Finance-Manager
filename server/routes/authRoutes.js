@@ -4,7 +4,7 @@ const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth'); 
 const User = require('../models/User');     
-const { register, login } = require('../controllers/authController');
+const { register, login, getMe,updateDetails,updatePassword } = require('../controllers/authController');
 
 router.post('/register', register);
 
@@ -38,5 +38,9 @@ router.get('/user', auth, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
+router.get('/me', auth, getMe);
+router.put('/update-details', auth, updateDetails);
+router.put('/update-password', auth, updatePassword);
 
 module.exports = router;
