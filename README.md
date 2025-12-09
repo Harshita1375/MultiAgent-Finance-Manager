@@ -4,14 +4,6 @@ A smart, AI-driven personal finance assistant that helps users manage monthly sa
 
 ## 🚀 Features
 
-The application consists of three intelligent agents working together:
-
-### 🚀 Features
-
-The application is powered by a multi-agent system where each agent specializes in a specific aspect of financial management:
-
-## 🚀 Features
-
 The application operates on a **Multi-Agent Architecture**, where specialized AI agents collaborate to manage different aspects of your financial life.
 
 ### 1. 🤖 Advisory Agent (The Brain)
@@ -125,6 +117,7 @@ MultiAgent-Finance-Manager/
 │
 └── docs/                       # Documentation
     └── STOCK_SELECTION_STRATEGY.md  # Detailed Trading Algorithm
+```
 
 ## ⚙️ Installation & Setup
 
