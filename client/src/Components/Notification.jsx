@@ -20,7 +20,6 @@ const Notification = () => {
                 hasChecked.current = true;
                 await axios.post(`${API_URL}/api/notifications/generate`, {}, { headers: { 'x-auth-token': token } });
                 
-                // 🔥 NEW: Tell the rest of the app that new alerts might have arrived
                 window.dispatchEvent(new Event('notificationUpdate'));
             }
 
@@ -40,7 +39,6 @@ const Notification = () => {
         try {
             await axios.put(`${API_URL}/api/notifications/read`, {}, { headers: { 'x-auth-token': token } });
             
-            // 🔥 NEW: Tell the Sidebar to clear the red badge immediately
             window.dispatchEvent(new Event('notificationUpdate'));
 
             setNotifications(notifications.map(n => ({ ...n, isRead: true })));
@@ -50,7 +48,6 @@ const Notification = () => {
     };
     useEffect(() => {
         fetchNotifications();
-        // eslint-disable-next-line
     }, []);
 
 

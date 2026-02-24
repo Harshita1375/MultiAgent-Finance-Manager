@@ -55,7 +55,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
         }
     };
 
-    if (loading) return <div className="loading-state">Loading Command Center...</div>;
+    if (loading) return <div className="loading-state">Loading Analytics...</div>;
     if (!stats) return <div className="loading-state">No Data Available</div>;
 
     const breakdown = stats.breakdown || { fixed: 0, wants: 0, savings: 0 };
@@ -76,7 +76,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
     };
 
     const getLast7DaysLabels = () => {
-        const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; // Short labels for mobile
+        const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; 
         const labels = [];
         for (let i = 6; i >= 0; i--) {
             const d = new Date();
@@ -97,7 +97,6 @@ const Analytics = ({ viewMode, selectedMonth }) => {
         }]
     };
 
-    // --- UPDATED: ALL LINES SHADED ---
     const cashFlowData = {
         labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], 
         datasets: [
@@ -108,8 +107,8 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                 borderWidth: 2,
                 pointRadius: 0,
                 borderDash: [5, 5],
-                fill: true, // Enable shading
-                backgroundColor: (context) => { // Green Gradient
+                fill: true,
+                backgroundColor: (context) => { 
                     const ctx = context.chart.ctx;
                     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
                     gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
@@ -183,7 +182,6 @@ const Analytics = ({ viewMode, selectedMonth }) => {
     return (
         <div className="analytics-container">
             
-            {/* KPI ROW */}
             <div className="kpi-grid">
                 <div className="kpi-card glass-blue">
                     <div className="kpi-icon"><FaMoneyBillWave /></div>
@@ -222,7 +220,6 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                 </div>
             </div>
 
-            {/* CHARTS ROW */}
             <div className="charts-grid-main">
                 <div className="chart-card large">
                     <div className="card-header"><h4>Cash Flow Trends</h4></div>
@@ -252,7 +249,6 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                 </div>
             </div>
 
-            {/* TRANSACTIONS GRID */}
             <div className="transactions-grid">
                 <div className="transaction-card">
                     <div className="card-header"><h4><FaReceipt /> Recent</h4></div>

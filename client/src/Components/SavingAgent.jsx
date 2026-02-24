@@ -40,8 +40,6 @@ const SavingAgent = () => {
     
     const [viewMode, setViewMode] = useState('all'); 
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); 
-    
-    // Asset Audit State
     const [assetType, setAssetType] = useState('house');
     const [assetValue, setAssetValue] = useState('');
     const [assetResult, setAssetResult] = useState(null);
@@ -119,7 +117,6 @@ const SavingAgent = () => {
     );
 
     const currentSavings = data.currentSavings || { sip: 0, fdRd: 0, gold: 0 };
-    // USE THIS NEW DATA FOR THE DISPLAY CARDS
     const presentSavings = data.presentSavings || { sip: 0, fdRd: 0, gold: 0 }; 
     const { projection, suggestions, marketStatus, hasEMI } = data;
 
@@ -171,7 +168,6 @@ const SavingAgent = () => {
                 />
             </div>
 
-            {/* --- NEW: Monthly Fixed Commitments Section --- */}
             <div className="monthly-commitments-section">
                 <h4><FaCoins /> Present Monthly Investments</h4>
                 <div className="commitment-grid">
@@ -199,7 +195,6 @@ const SavingAgent = () => {
                 </div>
             </div>
 
-            {/* --- EXISTING WEALTH PROJECTION --- */}
             <div className="projection-card">
                 <div className="card-header">
                     <h3>📈 Your Financial Future</h3>
@@ -231,7 +226,6 @@ const SavingAgent = () => {
                 </div>
             </div>
 
-            {/* --- SMART TRADING PLANS --- */}
             {tradingData && tradingData.plans && tradingData.plans.length > 0 && (
                 <div className="trading-section">
                     <div className="section-header-trade">
@@ -291,7 +285,6 @@ const SavingAgent = () => {
                 </div>
             )}
 
-            {/* --- SUGGESTIONS --- */}
             <div className="suggestions-section">
                 <h3>💡 AI Investment Advice</h3>
                 <div className="suggestion-grid">
@@ -304,7 +297,6 @@ const SavingAgent = () => {
                 </div>
             </div>
 
-            {/* --- ASSET AUDITOR --- */}
             {hasEMI && (
                 <div className="asset-auditor">
                     <div className="audit-header">

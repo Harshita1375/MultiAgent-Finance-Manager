@@ -7,5 +7,4 @@ router.post('/generate',auth,generateNotifications);
 router.get('/',auth,getNotifications);
 router.put('/read',auth,markRead);
 
-
 module.exports = router;

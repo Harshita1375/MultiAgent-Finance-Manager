@@ -46,7 +46,6 @@ const WalletWidget = ({ onSetupComplete }) => {
             
             fetchWalletData(); 
             
-            // 2. Call the prop to notify Dashboard
             if(onSetupComplete) onSetupComplete(); 
 
         } catch (err) {

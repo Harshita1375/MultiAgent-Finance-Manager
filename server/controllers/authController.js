@@ -45,7 +45,6 @@ exports.login = async (req, res) => {
 
 exports.getMe = async (req, res) => {
     try {
-        // req.user.id comes from the auth middleware
         const user = await User.findById(req.user.id).select('-password');
         res.json(user);
     } catch (err) {
@@ -54,7 +53,6 @@ exports.getMe = async (req, res) => {
     }
 };
 
-// 2. Update Profile Details (Username)
 exports.updateDetails = async (req, res) => {
     const { username } = req.body;
 
@@ -62,7 +60,6 @@ exports.updateDetails = async (req, res) => {
         let user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ msg: 'User not found' });
 
-        // Update fields
         if (username) user.username = username;
 
         await user.save();
@@ -73,7 +70,6 @@ exports.updateDetails = async (req, res) => {
     }
 };
 
-// 3. Update Password
 exports.updatePassword = async (req, res) => {
     const { currentPassword, newPassword } = req.body;
 
@@ -81,18 +77,15 @@ exports.updatePassword = async (req, res) => {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ msg: 'User not found' });
 
-        // Check if user is a Google-only user (no password set)
         if (!user.password) {
             return res.status(400).json({ msg: 'You are logged in via Google. Password cannot be changed.' });
         }
 
-        // Verify current password
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
             return res.status(400).json({ msg: 'Incorrect current password' });
         }
 
-        // Hash new password
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(newPassword, salt);
 

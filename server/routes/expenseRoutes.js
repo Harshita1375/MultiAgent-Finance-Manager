@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth'); // Protect these routes
+const auth = require('../middleware/auth');
 const { getExpenses, addExpense, deleteExpense } = require('../controllers/expenseController');
 
 router.get('/', auth, getExpenses);

@@ -112,10 +112,13 @@ exports.getTradingSuggestions = async (req, res) => {
     try {
         const userId = req.user.id;
         const { type, month, year } = req.query;
-        
+
         let totalInvestableCash = 0;
+        let totalIncome = 0;
+        let totalSavedAmount = 0;
         let recordsToProcess = [];
 
+        // ===== FETCH RECORDS =====
         if (type === 'month' && month && year) {
             const targetMonth = `${year}-${month}`;
             const singleRecord = await MonthlyRecord.findOne({ user: userId, month: targetMonth });
@@ -124,22 +127,66 @@ exports.getTradingSuggestions = async (req, res) => {
             recordsToProcess = await MonthlyRecord.find({ user: userId });
         }
 
+        // ===== CALCULATE CASH + SAVING % =====
         recordsToProcess.forEach(record => {
+
             const income = Number(record.income) || 0;
             const expenses = record.expenses || {};
             const savings = record.savings || {};
-            
-            const totalFixed = (Number(expenses.rent)||0) + (Number(expenses.emi)||0) + (Number(expenses.grocery)||0) + (Number(expenses.electricity)||0);
-            const totalAllocated = (Number(savings.sip)||0) + (Number(savings.fdRd)||0) + (Number(savings.gold)||0);
-            const monthlyFreeCash = Math.max(0, income - totalFixed - totalAllocated - (income * 0.1));
-            
+
+            totalIncome += income;
+
+            const saved =
+                (Number(savings.sip) || 0) +
+                (Number(savings.fdRd) || 0) +
+                (Number(savings.gold) || 0);
+
+            totalSavedAmount += saved;
+
+            const totalFixed =
+                (Number(expenses.rent) || 0) +
+                (Number(expenses.emi) || 0) +
+                (Number(expenses.grocery) || 0) +
+                (Number(expenses.electricity) || 0) +
+                (Number(expenses.otherBills) || 0) +
+                (Number(expenses.subscriptions) || 0) +
+                (Number(expenses.petrol) || 0) +
+                (Number(expenses.otherExpense) || 0);
+
+            const monthlyFreeCash = Math.max(
+                0,
+                income - totalFixed - saved - (income * 0.1) // 10% emergency buffer
+            );
+
             totalInvestableCash += monthlyFreeCash;
         });
 
         if (totalInvestableCash < 500) {
-            return res.json({ freeCash: totalInvestableCash, plans: [], message: "Low funds" });
+            return res.json({
+                freeCash: totalInvestableCash,
+                plans: [],
+                message: "Low funds available for trading."
+            });
         }
 
+        // ===== SAVING PERCENTAGE =====
+        const savingPercent = totalIncome > 0
+            ? (totalSavedAmount / totalIncome) * 100
+            : 0;
+
+        let savingStatus = "Weak";
+        if (savingPercent >= 30) savingStatus = "Excellent";
+        else if (savingPercent >= 20) savingStatus = "Good";
+        else if (savingPercent >= 10) savingStatus = "Average";
+
+        // ===== ALLOCATION BASED ON SAVING DISCIPLINE =====
+        let allocationRatio = 0.10; // default
+
+        if (savingPercent >= 30) allocationRatio = 0.40;
+        else if (savingPercent >= 20) allocationRatio = 0.30;
+        else if (savingPercent >= 10) allocationRatio = 0.20;
+
+        // ===== WATCHLIST =====
         const watchlist = [
             { symbol: 'NIFTYBEES.NS', name: 'Nifty 50 ETF', type: 'Safe' },
             { symbol: 'GOLDBEES.NS', name: 'Gold ETF', type: 'Safe' },
@@ -153,55 +200,150 @@ exports.getTradingSuggestions = async (req, res) => {
             { symbol: 'TCS.NS', name: 'TCS', type: 'Moderate' }
         ];
 
+        // ===== FETCH MARKET DATA =====
         let quotes = [];
+        let isFallback = false;
+
         try {
-            const results = await Promise.all(watchlist.map(stock => yahooFinance.quote(stock.symbol)));
-            quotes = results.filter(q => q && q.symbol).map(q => ({
-                symbol: q.symbol,
-                regularMarketPrice: q.regularMarketPrice || 0,
-                regularMarketChangePercent: q.regularMarketChangePercent || 0
-            }));
+            const results = await Promise.all(
+                watchlist.map(stock => yahooFinance.quote(stock.symbol))
+            );
+
+            quotes = results
+                .filter(q => q && q.symbol)
+                .map(q => ({
+                    symbol: q.symbol,
+                    regularMarketPrice: q.regularMarketPrice || 0,
+                    regularMarketChangePercent: q.regularMarketChangePercent || 0
+                }));
+
         } catch (e) {
-            quotes = watchlist.map(w => ({ symbol: w.symbol, regularMarketPrice: 250, regularMarketChangePercent: 1.2 }));
+    console.error("Yahoo API failed:", e.message);
+    isFallback = true;
+
+    // ===== Realistic Base Prices (Approx NSE) =====
+    const fallbackPrices = {
+        'NIFTYBEES.NS': 245,
+        'GOLDBEES.NS': 52,
+        'ITC.NS': 445,
+        'SBIN.NS': 620,
+        'TATAPOWER.NS': 380,
+        'ONGC.NS': 275,
+        'BEL.NS': 210,
+        'RELIANCE.NS': 2950,
+        'INFY.NS': 1650,
+        'TCS.NS': 3900
+    };
+
+    quotes = watchlist.map(w => {
+
+        const basePrice = fallbackPrices[w.symbol] || 300;
+
+        // ===== Volatility Logic =====
+        let volatility = 2; // default ±2%
+
+        if (w.type === 'Safe') volatility = 1.5;
+        if (w.symbol === 'NIFTYBEES.NS' || w.symbol === 'GOLDBEES.NS') {
+            volatility = 1; // ETFs move less
         }
 
-        let plans = [];
-        quotes.forEach(quote => {
-            const stockInfo = watchlist.find(w => w.symbol === quote.symbol);
-            if (!stockInfo) return; 
+        // Random % movement
+        const randomChange = (Math.random() * (volatility * 2) - volatility);
+        const adjustedPrice = basePrice * (1 + randomChange / 100);
 
-            const price = quote.regularMarketPrice || 0;
-            if (price > 0 && price < totalInvestableCash) {
-                const maxQty = Math.floor(totalInvestableCash / price);
-                plans.push({
-                    type: stockInfo.type,
-                    name: stockInfo.name,
-                    symbol: quote.symbol,
-                    price: price,
-                    change: quote.regularMarketChangePercent || 0,
-                    recommendation: `Buy ${maxQty} Qty`,
-                    totalCost: maxQty * price
-                });
-            }
+        // ===== Dynamic Risk Classification =====
+        let dynamicType = "Safe";
+
+        if (randomChange < -2) {
+            dynamicType = "Risk";
+        } else if (randomChange < 0) {
+            dynamicType = "Moderate";
+        }
+
+        return {
+            symbol: w.symbol,
+            regularMarketPrice: Math.round(adjustedPrice),
+            regularMarketChangePercent: Number(randomChange.toFixed(2)),
+            dynamicType   // this can be used later if needed
+        };
+    });
+
+    // Conservative fallback allocation
+    allocationRatio = 0.10;
+}
+
+        // Total smart investment pool
+    const smartInvestAmount = totalInvestableCash * allocationRatio;
+
+    // Portfolio split (must total 1.0)
+    const allocationMap = {
+        'NIFTYBEES.NS': 0.25,
+        'GOLDBEES.NS': 0.13,
+        'ITC.NS': 0.12,
+        'SBIN.NS': 0.18,
+        'TATAPOWER.NS': 0.15,
+        'ONGC.NS': 0.17
+    };
+
+    let plans = [];
+
+    quotes.forEach(quote => {
+
+        const stockInfo = watchlist.find(w => w.symbol === quote.symbol);
+        if (!stockInfo) return;
+
+        const price = quote.regularMarketPrice;
+        if (!price || price <= 0) return;
+
+        const stockAllocation = allocationMap[quote.symbol] || 0.10;
+
+        const stockInvestAmount = smartInvestAmount * stockAllocation;
+
+        const quantity = Math.floor(stockInvestAmount / price);
+        if (quantity <= 0) return;
+
+        const totalCost = quantity * price;
+
+        let expectedReturn = stockInfo.type === 'Safe' ? 0.08 : 0.14;
+
+        plans.push({
+            type: quote.dynamicType || stockInfo.type,
+            name: stockInfo.name,
+            symbol: quote.symbol,
+            price,
+            change: quote.regularMarketChangePercent,
+            quantity,
+            totalCost,
+            allocationPercent: (stockAllocation * 100).toFixed(0),
+            expectedReturn: `${expectedReturn * 100}%`,
+            recommendation: `Buy ${quantity} shares`
         });
 
+    });
+
+        // ===== SORTING =====
         plans.sort((a, b) => {
-            if (a.type === 'Safe' && b.type !== 'Safe') return -1; 
+            if (a.type === 'Safe' && b.type !== 'Safe') return -1;
             if (b.type === 'Safe' && a.type !== 'Safe') return 1;
-            return b.change - a.change; 
+            return b.change - a.change;
         });
 
+        // ===== RESPONSE =====
         res.json({
             freeCash: totalInvestableCash,
+            smartInvestment: smartInvestAmount,
+            savingPercent: savingPercent.toFixed(1),
+            savingStatus,
+            allocationPercent: (allocationRatio * 100).toFixed(0),
+            fallbackMode: isFallback,
             plans: plans.slice(0, 6)
         });
 
     } catch (err) {
-        console.error("Trading Error:", err);
-        res.status(500).send('Server Error');
+        console.error("SmartAgent Trading Error:", err);
+        res.status(500).send("Server Error");
     }
 };
-
 exports.analyzeAsset = async (req, res) => {
     try {
         const { type, emiAmount, value, location, tenureYears } = req.body;

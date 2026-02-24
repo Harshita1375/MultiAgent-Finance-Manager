@@ -29,5 +29,4 @@ const NotificationSchema = new mongoose.Schema({
     }
 });
 
-// ✅ CORRECT EXPORT (Do not use exports.Notification = ...)
 module.exports = mongoose.model('Notification', NotificationSchema);

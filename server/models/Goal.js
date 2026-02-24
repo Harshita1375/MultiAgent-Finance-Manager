@@ -9,7 +9,7 @@ const GoalSchema = new mongoose.Schema({
     title: { type: String, required: true },
     targetAmount: { type: Number, required: true },
     savedAmount: { type: Number, default: 0 },
-    deadline: { type: Date }, // Optional: When do they want it?
+    deadline: { type: Date }, 
     priority: { type: String, enum: ['High', 'Medium', 'Low'], default: 'Medium' },
     status: { type: String, enum: ['Active', 'Completed'], default: 'Active' },
     createdAt: { type: Date, default: Date.now }

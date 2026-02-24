@@ -596,7 +596,6 @@
     }
 }
 
-/* Small button inside the goal card */
 .add-funds-btn {
     background: #e0e7ff;
     color: #4f46e5;
@@ -614,7 +613,6 @@
     background: #c7d2fe;
 }
 
-/* Modal Overlay */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -629,7 +627,6 @@
     backdrop-filter: blur(3px);
 }
 
-/* Modal Content Box */
 .modal-content {
     background: white;
     padding: 25px;
