@@ -322,16 +322,110 @@
     }
 }
 
+/* --- UNIVERSAL MODAL OVERLAY --- */
+/* ================= MODAL OVERLAY (FIXED FLOATING) ================= */
+
 .modal-overlay {
     position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(6px);
+
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(4px);
+
+    z-index: 9999;
 }
+
+/* ================= FLOATING MODAL CARD ================= */
+
+.modal-box {
+    background: #ffffff;
+    width: 100%;
+    max-width: 420px;
+
+    padding: 30px;
+    border-radius: 20px;
+
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    animation: modalPop 0.25s ease;
+}
+
+/* ================= INPUTS ================= */
+
+.modal-box input {
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    font-size: 14px;
+    outline: none;
+}
+
+.modal-box input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* ================= BUTTONS ================= */
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.modal-actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Primary */
+.primary-btn {
+    background: #6366f1;
+    color: white;
+}
+
+.primary-btn:hover {
+    background: #4f46e5;
+}
+
+/* Cancel */
+.cancel-btn {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.cancel-btn:hover {
+    background: #e2e8f0;
+}
+
+/* ================= ANIMATION ================= */
+
+@keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
 
 .modal-content {
     background: white;
@@ -509,4 +603,20 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.add-money-btn {
+    background: #22c55e;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.add-money-btn:hover {
+    background: #16a34a;
+    transform: scale(1.05);
 }

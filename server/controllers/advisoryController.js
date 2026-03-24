@@ -228,3 +228,37 @@ exports.generateMonthlyPlan = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+// DELETE GOAL
+exports.deleteGoal = async (req, res) => {
+    try {
+        const goal = await Goal.findById(req.params.id);
+        if (!goal) return res.status(404).json({ msg: "Goal not found" });
+
+        await goal.deleteOne();
+        res.json({ msg: "Goal removed" });
+    } catch (err) {
+        res.status(500).send('Server Error');
+    }
+};
+
+// UPDATE GOAL
+exports.updateGoal = async (req, res) => {
+    try {
+        const { title, targetAmount, deadline, category, priority } = req.body;
+
+        const goal = await Goal.findById(req.params.id);
+        if (!goal) return res.status(404).json({ msg: "Goal not found" });
+
+        goal.title = title || goal.title;
+        goal.targetAmount = targetAmount || goal.targetAmount;
+        goal.deadline = deadline || goal.deadline;
+        goal.category = category || goal.category;
+        goal.priority = priority || goal.priority;
+
+        await goal.save();
+        res.json(goal);
+    } catch (err) {
+        res.status(500).send('Server Error');
+    }
+};

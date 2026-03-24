@@ -15,6 +15,12 @@ const AdvisoryAgent = () => {
     const [addAmount, setAddAmount] = useState('');
     const [simCost, setSimCost] = useState('');
     const [simResult, setSimResult] = useState(null);
+    const [editGoalData, setEditGoalData] = useState(null);
+    const openEditGoal = (goal) => {
+    setEditingGoal(null); // Close the "Add Money" modal if it's open
+    setEditGoalData(goal);
+    setView('editGoal');
+};
     const [newGoal, setNewGoal] = useState({
         title: '',
         targetAmount: '',
@@ -36,7 +42,21 @@ const AdvisoryAgent = () => {
             setData(res.data);
         } catch (err) { console.error("Data fetch failed", err); }
     };
+    const handleDeleteGoal = async (id) => {
+            const token = localStorage.getItem('token');
 
+            if (!window.confirm("Delete this goal?")) return;
+
+            try {
+                await axios.delete(`${API_URL}/api/agent/advisory/goals/${id}`, {
+                    headers: { 'x-auth-token': token }
+                });
+
+                fetchAdvisoryData();
+            } catch (err) {
+                console.error(err);
+            }
+};
     const generatePlan = async () => {
         setLoadingPlan(true);
         const token = localStorage.getItem('token');
@@ -49,39 +69,97 @@ const AdvisoryAgent = () => {
         } catch (err) { alert("Insufficient data for blueprint"); }
         setLoadingPlan(false);
     };
+    const handleUpdateGoal = async () => {
+    const token = localStorage.getItem('token');
+
+    try {
+        await axios.put(
+            `${API_URL}/api/agent/advisory/goals/${editGoalData._id}`,
+            editGoalData,
+            { headers: { 'x-auth-token': token } }
+        );
+
+        setView('dashboard');
+        fetchAdvisoryData();
+    } catch (err) {
+        console.error(err);
+    }
+};
 
     const renderGoalCard = (goal) => {
-        const progress = Math.min((goal.savedAmount / goal.targetAmount) * 100, 100);
-        const remaining = goal.targetAmount - goal.savedAmount;
+    const progress = Math.min((goal.savedAmount / goal.targetAmount) * 100, 100);
+    const remaining = goal.targetAmount - goal.savedAmount;
 
-        return (
-            <div key={goal._id} className="goal-card">
-                <div className="goal-card-top">
-                    <div className="goal-meta">
-                        <span className="goal-title">{goal.title}</span>
-                        <span className="goal-remaining">
-                            {remaining > 0 ? `₹${remaining.toLocaleString()} left` : 'Goal Hit! 🎉'}
-                        </span>
-                    </div>
-                    {remaining > 0 && (
-                        <button className="goal-action-btn" onClick={() => setEditingGoal(goal)}>
-                            <FaPlus />
-                        </button>
-                    )}
+    return (
+        <div key={goal._id} className="goal-card">
+            <div className="goal-card-top">
+                <div className="goal-meta">
+                    <span className="goal-title">{goal.title}</span>
+                    <span className="goal-remaining">
+                        {remaining > 0 
+                            ? `₹${remaining.toLocaleString()} left` 
+                            : 'Goal Hit! 🎉'}
+                    </span>
                 </div>
-                <div className="goal-amount-display">₹{goal.savedAmount.toLocaleString()}</div>
-                <div className="goal-progress-container">
-                    <div className="progress-track">
-                        <div className="progress-bar-fill" style={{width: `${progress}%`}}></div>
-                    </div>
-                    <div className="progress-stats">
-                        <span>{Math.round(progress)}%</span>
-                        <span>Target: ₹{goal.targetAmount.toLocaleString()}</span>
-                    </div>
+
+                <div className="goal-actions">
+                    <button 
+                        className="add-money-btn"
+                        onClick={() => {
+                            setView('dashboard'); // Ensure we aren't in 'editGoal' view
+                            setEditingGoal(goal);
+                        }}
+                    >
+                        💰 Add Money
+                    </button>
+
+                    <button onClick={() => openEditGoal(goal)}>✏️</button>
+                    <button onClick={() => handleDeleteGoal(goal._id)}>🗑️</button>
                 </div>
             </div>
+
+            <div className="goal-amount-display">
+                ₹{goal.savedAmount.toLocaleString()}
+            </div>
+
+            <div className="goal-progress-container">
+                <div className="progress-track">
+                    <div 
+                        className="progress-bar-fill" 
+                        style={{ width: `${progress}%` }}
+                    ></div>
+                </div>
+
+                <div className="progress-stats">
+                    <span>{Math.round(progress)}%</span>
+                    <span>Target: ₹{goal.targetAmount.toLocaleString()}</span>
+                </div>
+            </div>
+        </div>
+    );
+};
+const handleSimulate = async () => {
+    if (!simCost || Number(simCost) <= 0) {
+        alert("Enter a valid amount");
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+
+    try {
+        const res = await axios.post(
+            `${API_URL}/api/agent/advisory/affordability`,
+            { cost: Number(simCost) },
+            { headers: { 'x-auth-token': token } }
         );
-    };
+
+        setSimResult(res.data);
+
+    } catch (err) {
+        console.error(err);
+        alert("Simulation failed");
+    }
+};
     const handleAddGoal = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -104,6 +182,37 @@ const AdvisoryAgent = () => {
     } catch (err) {
         console.error(err);
         alert("Failed to add goal");
+    }
+};
+const handleAddMoney = async () => {
+    const token = localStorage.getItem('token');
+    
+    // Ensure we have a valid number
+    const amountToSend = Number(addAmount);
+    if (isNaN(amountToSend) || amountToSend <= 0) {
+        alert("Please enter a valid amount");
+        return;
+    }
+
+    try {
+        await axios.patch(
+            `${API_URL}/api/agent/advisory/goals/progress`,
+            {
+                goalId: editingGoal._id,
+                amount: amountToSend // Sent as a Number
+            },
+            {
+                headers: { 'x-auth-token': token }
+            }
+        );
+
+        setEditingGoal(null);
+        setAddAmount('');
+        fetchAdvisoryData(); // Refresh the UI
+
+    } catch (err) {
+        console.error("Patch Error:", err.response?.data || err.message);
+        alert("Failed to update progress: " + (err.response?.data?.msg || "Server Error"));
     }
 };
     if (!data) return <div className="loading">Consulting Advisor...</div>;
@@ -157,7 +266,12 @@ const AdvisoryAgent = () => {
                         <h3><FaShoppingCart /> Affordability Check</h3>
                         <div className="sim-box">
                             <input type="number" placeholder="Enter Price (₹)" value={simCost} onChange={e => setSimCost(e.target.value)} />
-                            <button>Analyze</button>
+                            <button onClick={handleSimulate}>Analyze</button>
+                            {simResult && (
+                            <div className="sim-result">
+                                <h3>{simResult.message}</h3>
+                            </div>
+                        )}
                         </div>
                     </div>
                 </div>
@@ -208,6 +322,69 @@ const AdvisoryAgent = () => {
                 <button onClick={() => setView('dashboard')}>Cancel</button>
             </div>
         )}
+        {view === 'editGoal' && editGoalData && (
+    <div className="add-goal-container">
+        <h2>Edit Goal ✏️</h2>
+
+        <input
+            value={editGoalData.title}
+            onChange={(e) => setEditGoalData({...editGoalData, title: e.target.value})}
+        />
+
+        <input
+            type="number"
+            value={editGoalData.targetAmount}
+            onChange={(e) => setEditGoalData({...editGoalData, targetAmount: e.target.value})}
+        />
+
+        <input
+            type="date"
+            value={editGoalData.deadline?.slice(0,10)}
+            onChange={(e) => setEditGoalData({...editGoalData, deadline: e.target.value})}
+        />
+
+        <select
+            value={editGoalData.category}
+            onChange={(e) => setEditGoalData({...editGoalData, category: e.target.value})}
+        >
+            <option>Short-Term</option>
+            <option>Long-Term</option>
+            <option>Retirement</option>
+        </select>
+
+        <button onClick={handleUpdateGoal}>Update Goal</button>
+        <button onClick={() => setView('dashboard')}>Cancel</button>
+    </div>
+)}
+            {editingGoal && (
+    <div className="modal-overlay">
+        <div className="modal-box">
+            <h2>Add Money 💰</h2>
+
+            <p>{editingGoal.title}</p>
+
+            <input
+                type="number"
+                placeholder="Enter amount"
+                value={addAmount}
+                onChange={(e) => setAddAmount(e.target.value)}
+            />
+
+            <div className="modal-actions">
+                <button className="primary-btn" onClick={handleAddMoney}>
+                    Add
+                </button>
+
+                <button 
+                    className="cancel-btn"
+                    onClick={() => setEditingGoal(null)}
+                >
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+)}
             {view === 'planner' && plan && (
                 <div className="planner-container">
                     <div className="planner-header">
