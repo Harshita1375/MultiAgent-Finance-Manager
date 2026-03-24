@@ -606,17 +606,17 @@
 }
 
 .add-money-btn {
-    background: #22c55e;
+    background: #ffffff;
     color: white;
     border: none;
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-size: 12px;
+    padding: 5px 10px;
+    
+    font-size: 18px;
     cursor: pointer;
     transition: 0.2s ease;
 }
 
 .add-money-btn:hover {
-    background: #16a34a;
+    background: #5ad575;
     transform: scale(1.05);
 }

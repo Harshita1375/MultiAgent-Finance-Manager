@@ -110,11 +110,11 @@ const AdvisoryAgent = () => {
                             setEditingGoal(goal);
                         }}
                     >
-                        💰 Add Money
+                        💰
                     </button>
 
-                    <button onClick={() => openEditGoal(goal)}>✏️</button>
-                    <button onClick={() => handleDeleteGoal(goal._id)}>🗑️</button>
+                    <button className="add-money-btn" onClick={() => openEditGoal(goal)}>✏️</button>
+                    <button className="add-money-btn" onClick={() => handleDeleteGoal(goal._id)}>🗑️</button>
                 </div>
             </div>
 
