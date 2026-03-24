@@ -9,9 +9,9 @@ const {
     generateMonthlyPlan
 } = require('../controllers/advisoryController');
 
-router.get('/dashboard', auth, getAdvisoryData);
+router.get('/analysis', auth, getAdvisoryData);
 router.post('/goals', auth, addGoal);
-router.put('/goals/progress', auth, updateGoalProgress);
+router.patch('/goals/progress', auth, updateGoalProgress);
 router.post('/affordability', auth, checkAffordability);
 router.get('/plan', auth, generateMonthlyPlan);
 

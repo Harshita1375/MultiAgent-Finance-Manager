@@ -162,7 +162,7 @@ const Dashboard = () => {
                                 {activeTab === 'advisory' && 'AI Advisor'}
                                 {activeTab === 'expense' && 'Expense Guardian'}
                                 {activeTab === 'savings' && 'Savings Agent'}
-                                {activeTab === 'notifications' && 'Notifications'}
+                                {activeTab === 'notifications' && 'Notification'}
                             </h2>
                             
                             {activeTab === 'overview' && (
