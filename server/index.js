@@ -32,6 +32,7 @@ app.use('/api/agent/savings', require('./routes/savingAgentRoutes'));
 app.use('/api/notifications', require('./routes/notificationsRoutes'));
 app.use('/api/wallet', require('./routes/walletRoutes'));
 app.use('/api/agent/advisory', require('./routes/advisoryRoutes'));   
+app.use('/api/agent/market', require('./routes/MarketRoutes'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server started on port ${PORT}`));

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { 
-    FaHistory, FaCog, FaHome, FaUser, FaRobot, FaPiggyBank, FaBell, FaBars,FaSignOutAlt, FaUserCircle, FaChevronDown, FaChevronUp, 
+    FaHistory, FaCog, FaHome, FaUser, FaRobot, FaChartLine, FaPiggyBank, FaBell, FaBars,FaSignOutAlt, FaUserCircle, FaChevronDown, FaChevronUp, 
     FaWallet,FaLayerGroup as FaExpenseIcon, FaUserEdit
 } from 'react-icons/fa';
 import './Dashboard.css';
@@ -17,6 +17,7 @@ import AdvisoryAgent from './AdvisoryAgent';
 import WalletWidget from './WalletWidget';
 import DateFilter from './DateFilter';
 import Settings from './Settings';
+import MarketAgent from './MarketAgent';
 
 const Dashboard = () => {
     const [searchParams] = useSearchParams();
@@ -131,6 +132,9 @@ const Dashboard = () => {
                     <button className={activeTab === 'savings' ? 'active' : ''} onClick={() => handleNavClick('savings')}>
                         <FaPiggyBank /> <span>Saving Agent</span>
                     </button>
+                    <button className={activeTab === 'market' ? 'active' : ''} onClick={() => handleNavClick('market')}>
+                        <FaChartLine /> <span>Market Agent</span>
+                    </button>
                     <button className={activeTab === 'notifications' ? 'active' : ''} onClick={() => handleNavClick('notifications')}>
                         <FaBell /> <span>Notifications</span>
                         <SidebarBadge/>
@@ -213,6 +217,7 @@ const Dashboard = () => {
                     {activeTab === 'advisory' && <AdvisoryAgent/>}
                     {activeTab === 'expense' && <ExpenseAgent />}
                     {activeTab === 'savings' && <SavingAgent />}
+                    {activeTab === 'market' && <MarketAgent />}
                     {activeTab === 'notifications' && <Notification />}
                 </div>
             </div>
