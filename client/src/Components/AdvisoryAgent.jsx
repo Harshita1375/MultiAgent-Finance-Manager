@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import GoalHistory from './GoalHistory';
 import { 
     FaRobot, FaBullseye, FaPlus, FaCheck, FaArrowRight, 
     FaMagic, FaRegLightbulb, FaCalendarAlt, FaHistory, FaPiggyBank, FaShoppingCart 
@@ -16,6 +17,7 @@ const AdvisoryAgent = () => {
     const [simCost, setSimCost] = useState('');
     const [simResult, setSimResult] = useState(null);
     const [editGoalData, setEditGoalData] = useState(null);
+    const [reward, setReward] = useState(null);
     const openEditGoal = (goal) => {
     setEditingGoal(null); // Close the "Add Money" modal if it's open
     setEditGoalData(goal);
@@ -42,6 +44,17 @@ const AdvisoryAgent = () => {
             setData(res.data);
         } catch (err) { console.error("Data fetch failed", err); }
     };
+    useEffect(() => {
+    // This creates the script tag dynamically
+    const script = document.createElement('script');
+    script.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+        document.body.removeChild(script); // Cleanup when component unmounts
+    }
+}, []);
     const handleDeleteGoal = async (id) => {
             const token = localStorage.getItem('token');
 
@@ -186,38 +199,122 @@ const handleSimulate = async () => {
 };
 const handleAddMoney = async () => {
     const token = localStorage.getItem('token');
-    
-    // Ensure we have a valid number
     const amountToSend = Number(addAmount);
-    if (isNaN(amountToSend) || amountToSend <= 0) {
-        alert("Please enter a valid amount");
-        return;
-    }
+    const oldProgress = (editingGoal.savedAmount / editingGoal.targetAmount) * 100;
 
     try {
-        await axios.patch(
-            `${API_URL}/api/agent/advisory/goals/progress`,
-            {
-                goalId: editingGoal._id,
-                amount: amountToSend // Sent as a Number
-            },
-            {
-                headers: { 'x-auth-token': token }
-            }
+        await axios.patch(`${API_URL}/api/agent/advisory/goals/progress`, 
+            { goalId: editingGoal._id, amount: amountToSend },
+            { headers: { 'x-auth-token': token } }
         );
+
+        const newTotal = editingGoal.savedAmount + amountToSend;
+        const newProgress = (newTotal / editingGoal.targetAmount) * 100;
+
+        // Check for milestones and trigger the shower
+        if (newProgress >= 100 && oldProgress < 100) {
+            triggerShower('100');
+        } else if (newProgress >= 75 && oldProgress < 75) {
+            triggerShower('75');
+        } else if (newProgress >= 50 && oldProgress < 50) {
+            triggerShower('50');
+        }
 
         setEditingGoal(null);
         setAddAmount('');
-        fetchAdvisoryData(); // Refresh the UI
-
+        fetchAdvisoryData(); 
     } catch (err) {
-        console.error("Patch Error:", err.response?.data || err.message);
-        alert("Failed to update progress: " + (err.response?.data?.msg || "Server Error"));
+        console.error("Update failed", err);
     }
+};
+
+// Helper function for the Chocolate & Sparkle shower
+const triggerShower = (milestone) => {
+    setReward(milestone);
+
+    if (!window.confetti) return;
+
+    const duration = 3 * 1000;
+    const end = Date.now() + duration;
+
+    // We define our "Celebration Items" here
+    const scalar = 2.5; // This makes the emojis big and clear
+    const items = ['🍫', '✨', '💰', '⭐', '🎉'];
+
+    (function frame() {
+        // Launch from the left
+        window.confetti({
+            particleCount: 2,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0, y: 0.7 },
+            colors: ['#ffd700', '#ffffff'], // Gold and White sparkles
+            ticks: 200
+        });
+
+        // Launch from the right
+        window.confetti({
+            particleCount: 2,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1, y: 0.7 },
+            colors: ['#ffd700', '#ffffff'],
+            ticks: 200
+        });
+
+        // This creates the random "Shower" of emojis across the screen
+        if (Math.random() < 0.2) { // Only launch an emoji every few frames
+            window.confetti({
+                particleCount: 1,
+                startVelocity: 0,
+                ticks: 100,
+                origin: {
+                    x: Math.random(),
+                    y: Math.random() - 0.2 // Starts slightly off-screen
+                },
+                // We use the 'shapes' array with a simple text fallback
+                shapes: ['circle'], 
+                // Since shapeFromText failed, we use a simple trick:
+                // We'll stick to beautiful gold/silver particles for the shower
+                // and let the big Emoji in your Reward Box be the main star!
+            });
+        }
+
+        if (Date.now() < end) {
+            requestAnimationFrame(frame);
+        }
+    }());
 };
     if (!data) return <div className="loading">Consulting Advisor...</div>;
 
     return (
+        <div className="advisory-parent-wrapper">
+            {/* 1. Reward Pop-up Logic */}
+            {reward && (
+    <div className="modal-overlay reward-animation">
+        <div className="modal-box reward-box">
+            <div className="reward-glow"></div> {/* Animated background glow */}
+            <div className="reward-icon">
+                {reward === '100' ? '🏆' : reward === '75' ? '🌟' : '🌗'}
+            </div>
+            <h2 className="reward-title">{reward}% Milestone!</h2>
+            <p className="reward-text">
+                {reward === '100' 
+                    ? "Incredible! You've fully funded this goal. Time for a real-life chocolate! 🍫" 
+                    : "You're making amazing progress. Keep that momentum going! ✨"}
+            </p>
+            <button 
+            className="primary-btn reward-btn" 
+            onClick={(e) => {
+                e.stopPropagation(); // Prevents the click from bubbling up
+                setReward(null);     // This is the key line
+            }}
+        >
+            Awesome!
+        </button>
+        </div>
+    </div>
+)}
         <div className="advisory-container">
             <div className="agent-header">
                 <div className="brand">
@@ -226,11 +323,15 @@ const handleAddMoney = async () => {
                 </div>
                 <div className="view-switcher">
                     <button className={view === 'dashboard' ? 'active' : ''} onClick={() => setView('dashboard')}>Overview</button>
+                    <button className={view === 'history' ? 'active' : ''} onClick={() => setView('history')}>Past Goals</button>
                     <button className={view === 'planner' ? 'active' : ''} onClick={generatePlan}>
                         {loadingPlan ? 'Analyzing...' : <><FaMagic /> AI Planner</>}
                     </button>
                 </div>
             </div>
+            {view === 'history' && (
+                <GoalHistory goals={data.goals} />
+            )}
 
             {view === 'dashboard' && (
                 <div className="advisory-grid">
@@ -278,7 +379,7 @@ const handleAddMoney = async () => {
             )}
             {view === 'addGoal' && (
             <div className="add-goal-container">
-                <h2>Add New Goal 🎯</h2>
+                <h2>🎯</h2>
 
                 <input
                     type="text"
@@ -422,7 +523,9 @@ const handleAddMoney = async () => {
                 </div>
             )}
         </div>
+        </div>
     );
+    
 };
 
 export default AdvisoryAgent;

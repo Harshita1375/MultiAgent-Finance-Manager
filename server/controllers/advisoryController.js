@@ -4,7 +4,6 @@ const Goal = require('../models/Goal');
 const Expense = require('../models/Expense');
 const Notification = require('../models/Notification');
 
-// ================= GET ADVISORY DATA =================
 exports.getAdvisoryData = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -37,10 +36,8 @@ exports.getAdvisoryData = async (req, res) => {
 
         const freeCash = Math.max(0, income - totalFixed - totalSaved - totalWants);
 
-        // ✅ FIXED: userId directly (NO ObjectId conversion)
         const goals = await Goal.find({
             user: userId,
-            status: 'Active'
         });
 
         // Normalize category
@@ -49,14 +46,17 @@ exports.getAdvisoryData = async (req, res) => {
             category: g.category || 'Short-Term'
         }));
 
-        // Group goals
-        const groupedGoals = {
-            shortTerm: normalizedGoals.filter(g => g.category === 'Short-Term'),
-            longTerm: normalizedGoals.filter(g => g.category === 'Long-Term'),
-            retirement: normalizedGoals.filter(g => g.category === 'Retirement')
-        };
+        // 1. Logic for Metrics (income, freeCash, etc.)
+        // ... (your existing calculation code)
 
+        // 2. Logic for Goals (Fetching and Grouping)
+        const activeGoals = goals.filter(g => g.status !== 'Completed');
+        const completedGoals = goals.filter(g => g.status === 'Completed');
+
+        // 3. INITIALIZE ADVICE HERE (Crucial Step)
         const advice = [];
+
+        // 4. Fill the advice array
         if (totalSaved < income * 3) {
             advice.push({
                 type: 'critical',
@@ -65,15 +65,26 @@ exports.getAdvisoryData = async (req, res) => {
             });
         }
 
+        // 5. Group the goals
+        const groupedGoals = {
+            shortTerm: activeGoals.filter(g => (g.category || 'Short-Term') === 'Short-Term'),
+            longTerm: activeGoals.filter(g => g.category === 'Long-Term'),
+            retirement: activeGoals.filter(g => g.category === 'Retirement'),
+            history: completedGoals
+        };
+
+        // 6. NOW send the response
+        res.json({
+            metrics: { income, freeCash, totalSaved },
+            goals: groupedGoals,
+            advice // Now 'advice' is safely initialized!
+        });
+
         // Debug logs
         console.log("USER ID:", userId);
         console.log("GOALS FOUND:", normalizedGoals.length);
 
-        res.json({
-            metrics: { income, freeCash, totalSaved },
-            goals: groupedGoals,
-            advice
-        });
+
 
     } catch (err) {
         console.error(err);
@@ -84,7 +95,7 @@ exports.getAdvisoryData = async (req, res) => {
 exports.addGoal = async (req, res) => {
     try {
         const { title, targetAmount, deadline, category, priority } = req.body;
-        
+
         const newGoal = new Goal({
             user: req.user.id,
             title,
@@ -107,7 +118,7 @@ exports.updateGoalProgress = async (req, res) => {
     try {
         const { goalId, amount } = req.body;
         const goal = await Goal.findById(goalId);
-        
+
         if (!goal) return res.status(404).json({ msg: "Goal not found" });
 
         goal.savedAmount += Number(amount);
@@ -118,7 +129,7 @@ exports.updateGoalProgress = async (req, res) => {
                 user: req.user.id,
                 title: 'Goal Achieved! 🏆',
                 message: `Congratulations! You've fully funded your ${goal.category} goal "${goal.title}".`,
-                type: 'success', 
+                type: 'success',
                 date: new Date()
             });
         }
@@ -135,10 +146,10 @@ exports.checkAffordability = async (req, res) => {
         const { cost } = req.body;
         const userId = req.user.id;
         const currentMonthStr = new Date().toISOString().slice(0, 7);
-        
+
         const record = await MonthlyRecord.findOne({ user: userId, month: currentMonthStr });
         const income = record?.income || 0;
-        const liquidCash = (record?.savings?.cash || 0) + (Math.max(0, income - (record?.expenses?.rent||0) - (record?.savings?.sip||0)));
+        const liquidCash = (record?.savings?.cash || 0) + (Math.max(0, income - (record?.expenses?.rent || 0) - (record?.savings?.sip || 0)));
 
         let verdict = "safe";
         let message = "Go ahead! You have enough liquid cash.";
@@ -169,16 +180,16 @@ exports.generateMonthlyPlan = async (req, res) => {
         const expenses = record.expenses || {};
         const wallet = record.wallet || { limit: 0, spent: 0 };
 
-        const hardFixed = (expenses.rent || 0) + (expenses.emi || 0) + (expenses.schoolFees || 0); 
-        const softFixed = (expenses.grocery || 0) + (expenses.electricity || 0) + (expenses.otherBills || 0) + (expenses.petrol || 0); 
-        const variableWants = (expenses.subscriptions || 0) + (expenses.partyBudget || 0) + (expenses.otherExpense || 0); 
-        
+        const hardFixed = (expenses.rent || 0) + (expenses.emi || 0) + (expenses.schoolFees || 0);
+        const softFixed = (expenses.grocery || 0) + (expenses.electricity || 0) + (expenses.otherBills || 0) + (expenses.petrol || 0);
+        const variableWants = (expenses.subscriptions || 0) + (expenses.partyBudget || 0) + (expenses.otherExpense || 0);
+
         const today = new Date();
         const thirtyDaysAgo = new Date(new Date().setDate(today.getDate() - 30));
-        const recentDiscretionary = await Expense.find({ 
-            user: userId, 
+        const recentDiscretionary = await Expense.find({
+            user: userId,
             date: { $gte: thirtyDaysAgo },
-            type: 'want' 
+            type: 'want'
         });
         const actualVariableSpend = recentDiscretionary.reduce((sum, e) => sum + e.amount, 0);
 
@@ -188,7 +199,7 @@ exports.generateMonthlyPlan = async (req, res) => {
         const currentPotentialSavings = Math.max(0, income - currentTotalOutflow);
 
         let optimizationSteps = [];
-        const optimizedSoftFixed = softFixed * 0.95; 
+        const optimizedSoftFixed = softFixed * 0.95;
         if (softFixed > 0) optimizationSteps.push(`Optimize utilities & groceries by ₹${Math.round(softFixed - optimizedSoftFixed)}`);
 
         let optimizedWants = 0;
@@ -196,7 +207,7 @@ exports.generateMonthlyPlan = async (req, res) => {
             optimizedWants = income * 0.15;
             optimizationSteps.push(`Strict cap on lifestyle expenses (Max ₹${Math.round(optimizedWants)})`);
         } else {
-            optimizedWants = currentTotalWants * 0.80; 
+            optimizedWants = currentTotalWants * 0.80;
             if (currentTotalWants > 0) optimizationSteps.push(`Reduce discretionary spending by 20%`);
         }
 
