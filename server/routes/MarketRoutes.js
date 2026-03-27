@@ -1,16 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const { analyzeMarket } = require('../controllers/marketController');
+const { getPersonalImpact } = require('../controllers/ImpactController');
 
-// Since server.js already provides '/api/agent/market', 
-// we only need '/analysis' here to make the full URL work.
 router.get('/analysis', async (req, res) => {
     try {
-        const data = await analyzeMarket();
-        res.json(data || []); // Safety fallback to empty array
-    } catch (error) {
-        console.error("Router Error:", error);
-        res.status(500).json({ error: "Agent is offline" });
+        const marketNews = await analyzeMarket();
+
+        const userId = req.query.userId;
+        const personalAlerts = await getPersonalImpact(marketNews, userId);
+
+        res.status(200).json({
+            marketNews: marketNews || [],
+            personalAlerts: personalAlerts || []
+        });
+    } catch (err) {
+        console.error("Route Error:", err);
+        res.status(500).json({ error: "Internal Server Error", message: err.message });
     }
 });
 
