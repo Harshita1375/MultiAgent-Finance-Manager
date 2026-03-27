@@ -36,53 +36,78 @@ const Profile = () => {
     });
 
     useEffect(() => {
-        const fetchData = async () => {
-            const token = localStorage.getItem('token');
-            try {
-                const res = await axios.get(`${API_URL}/api/records?month=${selectedMonth}`, {
-                    headers: { 'x-auth-token': token }
-                });
-                
-                if (res.data && res.data.month) {
-                    setIsEditing(true);
-                    const d = res.data;
-                    setFormData({
-                        netEarnings: d.income || '', 
-                        emi: d.expenses?.emi || '',
-                        rent: d.expenses?.rent || '',
-                        grocery: d.expenses?.grocery || '',
-                        electricity: d.expenses?.electricity || '',
-                        otherBills: d.expenses?.otherBills || '',
-                        subscriptions: d.expenses?.subscriptions || '',
-                        petrol: d.expenses?.petrol || '',
-                        otherExpense: d.expenses?.otherExpense || '',
-                        
-                        maritalStatus: 'single', 
-                        hasChildren: 'no',
-                        schoolFees: '', 
+        const fetchData = async () => {
+            const token = localStorage.getItem('token');
+            try {
+                // 1. Try to fetch data for the currently selected month
+                const res = await axios.get(`${API_URL}/api/records?month=${selectedMonth}`, {
+                    headers: { 'x-auth-token': token }
+                });
+                
+                if (res.data && res.data.month) {
+                    // Record exists: Set editing mode and fill data
+                    setIsEditing(true);
+                    populateForm(res.data);
+                } else {
+                    // 2. Record doesn't exist: Attempt to fetch previous month as a template
+                    setIsEditing(false);
+                    
+                    const date = new Date(selectedMonth + "-01");
+                    date.setMonth(date.getMonth() - 1);
+                    const prevMonthStr = date.toISOString().slice(0, 7);
 
-                        partyBudget: '',
+                    const prevRes = await axios.get(`${API_URL}/api/records?month=${prevMonthStr}`, {
+                        headers: { 'x-auth-token': token }
+                    });
 
-                        sip: d.savings?.sip || '',
-                        fdRd: d.savings?.fdRd || '',
-                        gold: d.savings?.gold || '',
-                        notes: d.notes || ''
-                    });
-                } else {
-                    setIsEditing(false);
-                    setFormData({ 
-                        netEarnings: '', emi: '', rent: '', grocery: '', electricity: '', 
-                        otherBills: '', subscriptions: '', petrol: '', otherExpense: '', 
-                        maritalStatus: 'single', hasChildren: 'no', schoolFees: '', partyBudget: '',
-                        sip: '', fdRd: '', gold: '', notes: '' 
-                    });
-                }
-            } catch (err) { 
-                console.error("Error fetching record:", err); 
-            }
+                    if (prevRes.data && prevRes.data.month) {
+                        // Previous month found: Use it as default values for the new record
+                        populateForm(prevRes.data);
+                    } else {
+                        // No previous data found: Reset to empty
+                        resetForm();
+                    }
+                }
+            } catch (err) { 
+                console.error("Error fetching record:", err); 
+            }
+        };
+
+        // Helper to map API response to Form State
+        const populateForm = (d) => {
+            setFormData({
+                netEarnings: d.income || '', 
+                emi: d.expenses?.emi || '',
+                rent: d.expenses?.rent || '',
+                grocery: d.expenses?.grocery || '',
+                electricity: d.expenses?.electricity || '',
+                otherBills: d.expenses?.otherBills || '',
+                subscriptions: d.expenses?.subscriptions || '',
+                petrol: d.expenses?.petrol || '',
+                otherExpense: d.expenses?.otherExpense || '',
+                maritalStatus: d.demographics?.maritalStatus || 'single', 
+                hasChildren: d.demographics?.hasChildren || 'no',
+                schoolFees: d.demographics?.schoolFees || '', 
+                partyBudget: d.lifestyle?.partyBudget || '',
+                sip: d.savings?.sip || '',
+                fdRd: d.savings?.fdRd || '',
+                gold: d.savings?.gold || '',
+                notes: d.notes || ''
+            });
         };
-        fetchData();
-    }, [selectedMonth, API_URL]);
+
+        // Helper to reset form
+        const resetForm = () => {
+            setFormData({ 
+                netEarnings: '', emi: '', rent: '', grocery: '', electricity: '', 
+                otherBills: '', subscriptions: '', petrol: '', otherExpense: '', 
+                maritalStatus: 'single', hasChildren: 'no', schoolFees: '', partyBudget: '',
+                sip: '', fdRd: '', gold: '', notes: '' 
+            });
+        };
+
+        fetchData();
+    }, [selectedMonth, API_URL]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
