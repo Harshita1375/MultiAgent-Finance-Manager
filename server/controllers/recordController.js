@@ -42,22 +42,69 @@ const generateFixedTransactions = (record) => {
             });
         }
     });
+    if (record.insurance) {
+        if (record.insurance.life > 0) {
+            fixedList.push({
+                _id: `ins-life-${record._id}`,
+                title: 'Life Insurance Premium',
+                amount: record.insurance.life,
+                category: 'Insurance',
+                type: 'need',
+                date: date,
+                isFixed: true
+            });
+        }
+        if (record.insurance.health > 0) {
+            fixedList.push({
+                _id: `ins-health-${record._id}`,
+                title: 'Health Insurance Premium',
+                amount: record.insurance.health,
+                category: 'Insurance',
+                type: 'need',
+                date: date,
+                isFixed: true
+            });
+        }
+    }
+
+    // 3. ADD THIS: Map Notes as a "Remark" transaction (if it has a value)
+    if (record.notes && record.notes.trim() !== "") {
+        fixedList.push({
+            _id: `note-${record._id}`,
+            title: `Note: ${record.notes}`,
+            amount: 0, // Notes usually don't have a cost, or you can omit from table
+            category: 'Notes',
+            type: 'info',
+            date: date,
+            isFixed: true
+        });
+    }
 
     return fixedList;
 };
 
 exports.saveMonthlyRecord = async (req, res) => {
     try {
-        const { month, income, expenses, savings, notes } = req.body;
+        const { month, income, expenses, savings, insurance, notes } = req.body;
+
+        // Perform the update
         let record = await MonthlyRecord.findOneAndUpdate(
             { user: req.user.id, month: month },
-            { income, expenses, savings, notes },
-            { new: true, upsert: true } 
+            { income, expenses, savings, insurance, notes },
+            { new: true, upsert: true, runValidators: true } 
         );
+
+        console.log("✅ Data Saved Successfully:", record.month);
         res.json(record);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        // DETECT SPECIFIC FAILURES
+        if (err.name === 'ValidationError') {
+            console.error("❌ Mongoose Validation Error:", err.message);
+            return res.status(400).json({ msg: "Data format error", detail: err.message });
+        }
+        
+        console.error("❌ Server Error during save:", err.message);
+        res.status(500).json({ msg: "Internal Server Error", error: err.message });
     }
 };
 
@@ -83,11 +130,11 @@ exports.getAllHistory = async (req, res) => {
 
 exports.updateMonthlyRecord = async (req, res) => {
     try {
-        const { month, income, expenses, savings, notes } = req.body;
+        const { month, income, expenses, savings,insurance, notes } = req.body;
         const record = await MonthlyRecord.findOneAndUpdate(
             { user: req.user.id, month: month },
             { 
-                $set: { income, expenses, savings, notes } 
+                $set: { income, expenses, savings, insurance, notes } 
             },
             { new: true }
         );

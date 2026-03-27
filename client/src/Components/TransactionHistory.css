@@ -230,3 +230,8 @@
         color: #2563eb;
     }
 }
+
+.badge-type.info {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}

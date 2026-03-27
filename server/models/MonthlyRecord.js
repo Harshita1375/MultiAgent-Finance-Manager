@@ -39,6 +39,12 @@ const MonthlyRecordSchema = new mongoose.Schema({
     totalNeeds: { type: Number, default: 0 },
     totalWants: { type: Number, default: 0 },
 
+    insurance: {
+        life: { type: Number, default: 0 },
+        health: { type: Number, default: 0 },
+        familyDetails: { type: String, default: '' }
+    },
+
     savings: {
         sip: { type: Number, default: 0 },
         fdRd: { type: Number, default: 0 },

@@ -31,7 +31,6 @@ const UserSchema = new mongoose.Schema({
         lifestyle: {
             partyBudget: { type: Number, default: 0 }
         },
-
         savings: {
             sip: { type: Number, default: 0 },
             fdRd: { type: Number, default: 0 },

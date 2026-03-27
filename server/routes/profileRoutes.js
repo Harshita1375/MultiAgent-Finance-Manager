@@ -10,10 +10,29 @@ router.post('/', auth, async (req, res) => {
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
-
+        const { 
+            netEarnings, 
+            expenses, 
+            demographics, 
+            lifestyle, 
+            savings, 
+            insurance, // New field from frontend
+            notes 
+        } = req.body;
         user.profile = {
             ...user.profile, 
-            ...req.body,     
+            netEarnings: netEarnings || user.profile.netEarnings,
+            expenses: { ...user.profile.expenses, ...expenses },
+            demographics: { ...user.profile.demographics, ...demographics },
+            lifestyle: { ...user.profile.lifestyle, ...lifestyle },
+            savings: { ...user.profile.savings, ...savings },
+            // Explicitly saving insurance data
+            insurance: {
+                life: insurance?.life || 0,
+                health: insurance?.health || 0,
+                familyDetails: insurance?.familyDetails || ''
+            },
+            notes: notes || user.profile.notes,
             isProfileComplete: true
         };
 

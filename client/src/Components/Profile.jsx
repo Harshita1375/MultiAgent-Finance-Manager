@@ -26,6 +26,10 @@ const Profile = () => {
         hasChildren: 'no',
         schoolFees: '',
 
+        lifeInsurance: '',
+    healthInsurance: '',
+    familyHealthDetails: '',
+
         partyBudget: '',
 
         sip: '',
@@ -88,6 +92,9 @@ const Profile = () => {
                 maritalStatus: d.demographics?.maritalStatus || 'single', 
                 hasChildren: d.demographics?.hasChildren || 'no',
                 schoolFees: d.demographics?.schoolFees || '', 
+                lifeInsurance: d.insurance?.life || '',
+        healthInsurance: d.insurance?.health || '',
+        familyHealthDetails: d.insurance?.familyDetails || '',
                 partyBudget: d.lifestyle?.partyBudget || '',
                 sip: d.savings?.sip || '',
                 fdRd: d.savings?.fdRd || '',
@@ -116,6 +123,15 @@ const Profile = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const isSingleInsuranceEmpty = formData.maritalStatus === 'single' && (!formData.lifeInsurance || !formData.healthInsurance);
+    const isFamilyInsuranceEmpty = formData.maritalStatus === 'married' && !formData.familyHealthDetails;
+
+    if (isSingleInsuranceEmpty || isFamilyInsuranceEmpty) {
+        const confirmSave = window.confirm(
+            "⚠️ Insurance details are missing. It's recommended to track these for better financial planning. Do you want to save anyway?"
+        );
+        if (!confirmSave) return; // Stop the function if user clicks 'Cancel'
+    }
         
         try {
             const token = localStorage.getItem('token');
@@ -139,6 +155,12 @@ const Profile = () => {
                     petrol: formData.petrol,
                     otherExpense: formData.otherExpense
                 },
+                insurance: {
+                life: formData.lifeInsurance,
+                health: formData.healthInsurance,
+                familyDetails: formData.familyHealthDetails
+            },
+        
                 savings: {
                     sip: formData.sip,
                     fdRd: formData.fdRd,
@@ -146,19 +168,32 @@ const Profile = () => {
                 },
                 notes: formData.notes
             };
+            let res; // Declared at the top of try
 
-            if (isEditing) {
-                await axios.put(`${API_URL}/api/records/update`, payload, config);
-                alert(`✅ Record Updated for ${selectedMonth}!`);
-            } else {
-                await axios.post(`${API_URL}/api/records`, payload, config);
-                alert(`✅ Record Created for ${selectedMonth}!`);
-            }
-
-        } catch (err) {
-            console.error(err);
-            alert("❌ Error saving profile. Please try again.");
+        if (isEditing) {
+            res = await axios.put(`${API_URL}/api/records/update`, payload, config);
+        } else {
+            res = await axios.post(`${API_URL}/api/records`, payload, config);
         }
+        
+        // --- FIXED LOGIC HERE ---
+        // Use the optional chaining operator (?.) to prevent the "undefined" crash
+        if (res?.data) {
+            alert(`✅ Record ${isEditing ? 'Updated' : 'Created'} for ${selectedMonth}!`);
+            
+            if (res.data.insurance) {
+                console.log("Insurance data confirmed in response.");
+            }
+        }
+
+    } catch (err) {
+        // This is where your console error was coming from.
+        // Always check err.response for Axios errors.
+        console.error("Submission Error Details:", err.response?.data || err.message);
+        
+        const errorMessage = err.response?.data?.message || "Server connection failed.";
+        alert(`❌ Failed to save: ${errorMessage}`);
+    }
     };
 
     return (
@@ -267,6 +302,48 @@ const Profile = () => {
                     </div>
                 </div>
 
+                <h3>🛡️ Insurance Details</h3>
+    <div className="grid-2-col">
+        {/* Life Insurance - specifically for Single users */}
+        {formData.maritalStatus === 'single' && (
+            <div className="input-group">
+                <label>Life Insurance EMI</label>
+                <input 
+                    type="number" 
+                    name="lifeInsurance" 
+                    placeholder="Monthly Premium" 
+                    value={formData.lifeInsurance} 
+                    onChange={handleChange} 
+                />
+            </div>
+        )}
+
+        {/* Health Insurance - Logic changes based on status */}
+        <div className="input-group">
+            <label>
+                {formData.maritalStatus === 'married' 
+                    ? "Health Insurance (Family Cover Details)" 
+                    : "Personal Health Insurance"}
+            </label>
+            {formData.maritalStatus === 'married' ? (
+                <textarea 
+                    name="familyHealthDetails" 
+                    placeholder="e.g. Spouse: ₹500, Child: ₹300..." 
+                    value={formData.familyHealthDetails} 
+                    onChange={handleChange}
+                    rows="2"
+                />
+            ) : (
+                <input 
+                    type="number" 
+                    name="healthInsurance" 
+                    placeholder="Monthly Premium" 
+                    value={formData.healthInsurance} 
+                    onChange={handleChange} 
+                />
+            )}
+        </div>
+    </div>
                 <div className="form-section">
                     <h3>🐷 Current Savings & Assets</h3>
                     <div className="grid-3-col">

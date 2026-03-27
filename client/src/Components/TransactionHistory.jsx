@@ -121,7 +121,7 @@ const TransactionHistory = () => {
                                             </span>
                                         </td>
                                         <td data-label="Amount" className="amount-col">
-                                            ₹{t.amount.toLocaleString()}
+                                            {t.category === 'Notes' ? '—' : `₹${t.amount.toLocaleString()}`}
                                         </td>
                                     </tr>
                                 );
