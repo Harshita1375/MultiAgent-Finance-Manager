@@ -371,3 +371,8 @@
     background: #fee2e2;
     color: #dc2626;
 }
+.glass-pink {
+    background: linear-gradient(135deg, #fdf2f8, #ffffff);
+    border-left: 4px solid #ec4899;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.15);
+}

@@ -1,5 +1,6 @@
 const MonthlyRecord = require('../models/MonthlyRecord');
 const Expense = require('../models/Expense');
+const User = require('../models/User');
 
 exports.getUserAnalytics = async (req, res) => {
     try {
@@ -23,6 +24,7 @@ exports.getUserAnalytics = async (req, res) => {
         // 2. Fetch Data
         const records = await MonthlyRecord.find(recordQuery);
         const variableExpenses = await Expense.find(expenseQuery).sort({ date: -1 });
+        const totalUsers = await User.countDocuments();
 
         // 3. Calculate Aggregates
         let totalIncome = 0;
@@ -91,6 +93,7 @@ exports.getUserAnalytics = async (req, res) => {
         });
 
         res.json({
+            totalUsers,
             totalIncome,
             totalSpent,
             totalSaved, // This is now Dynamic (Income - Spent)

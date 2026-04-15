@@ -18,3 +18,5 @@ dist/
 .DS_Store
 
 server/GuestUser.js
+
+client/src/components/seedUsers.js

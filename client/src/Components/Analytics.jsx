@@ -63,6 +63,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
     const income = stats.totalIncome || 0;
     const spent = stats.totalSpent || 0;
     const saved = stats.totalSaved || 0;
+    const totalUsers = stats.totalUsers || 0;
     const recentTransactions = stats.recentTransactions || [];
     const upcomingTransactions = stats.upcomingTransactions || [];
 
@@ -206,6 +207,14 @@ const Analytics = ({ viewMode, selectedMonth }) => {
         <small>Total Expense</small>
         <h3>₹{(spent/1000).toFixed(1)}k</h3>
         <span className="badge negative">Outflow</span>
+    </div>
+</div>
+<div className="kpi-card glass-pink">
+    <div className="kpi-icon"><FaChartLine /></div>
+    <div className="kpi-info">
+        <small>Total Users</small>
+        <h3>{totalUsers.toLocaleString()}</h3>
+        <span className="badge positive">Registered</span>
     </div>
 </div>
 
