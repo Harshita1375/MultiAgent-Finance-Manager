@@ -5,49 +5,52 @@ exports.getRetirementAnalysis = async (req, res) => {
     try {
         const userId = req.user.id;
 
-        // 🔹 Get retirement plan
+        // 🔹 Get plan
         let plan = await RetirementPlan.findOne({ user: userId });
 
-        // 🔹 Fallback plan (if not saved)
-        if (!plan) {
-            const { currentAge, targetAge, inflationRate, expectedReturns } = req.body || {};
-
-            plan = {
-                currentAge: currentAge || 25,
-                targetAge: targetAge || 60,
-                inflationRate: inflationRate || 6,
-                expectedReturns: expectedReturns || 12
-            };
-
-            console.log("⚠️ Using fallback retirement inputs");
-        }
-
-        // 🔥 FETCH EXPENSE DATA (MAIN FIX)
+        // 🔹 Fetch expenses
         const expenses = await Expense.find({ user: userId });
 
         console.log("🧾 Expenses:", expenses);
 
+        // ✅ STEP 1: If NO expenses → ask frontend to show form
         if (!expenses || expenses.length === 0) {
             return res.json({
-                analysis: {
-                    requiredCorpus: 0,
-                    monthlyInvestmentNeeded: 0,
-                    currentShortfall: 0,
-                    status: 'Critical',
-                    aiSuggestions: ["No expense data found. Add expenses to see forecast."]
-                },
-                currentMonthlySavings: 0
+                needsInput: true,   // 👈 IMPORTANT FLAG
+                message: "No expense data found"
             });
         }
 
-        // 🔹 Calculate Needs & Wants
+        // 🔹 If no plan → use frontend input
+        if (!plan) {
+    const { currentAge, targetAge, inflationRate, expectedReturns } = req.body || {};
+
+    // ❌ If no input → ask frontend
+    if (!currentAge) {
+        return res.status(400).json({ message: "PLAN_REQUIRED" });
+    }
+
+    // ✅ Create and save plan
+    plan = new RetirementPlan({
+        user: userId,
+        currentAge,
+        targetAge,
+        inflationRate,
+        expectedReturns
+    });
+
+    await plan.save();
+
+    console.log("✅ New retirement plan created");
+}
+
+        // 🔹 Calculate Needs/Wants
         let totalNeeds = 0;
         let totalWants = 0;
 
         expenses.forEach(e => {
             const category = e.category.toLowerCase();
 
-            // 👉 Basic classification (you can improve later)
             if (
                 category.includes('rent') ||
                 category.includes('grocery') ||
@@ -66,20 +69,6 @@ exports.getRetirementAnalysis = async (req, res) => {
         const monthlyExpense = totalNeeds + totalWants;
         const annualExpense = monthlyExpense * 12;
 
-        // 🔹 If still no expense
-        if (annualExpense === 0) {
-            return res.json({
-                analysis: {
-                    requiredCorpus: 0,
-                    monthlyInvestmentNeeded: 0,
-                    currentShortfall: 0,
-                    status: 'Critical',
-                    aiSuggestions: ["Expenses are zero. Add proper data."]
-                },
-                currentMonthlySavings: 0
-            });
-        }
-
         // 🔹 Extract plan values
         const { currentAge, targetAge, inflationRate, expectedReturns } = plan;
 
@@ -89,7 +78,6 @@ exports.getRetirementAnalysis = async (req, res) => {
             return res.status(400).json({ message: "Invalid age values." });
         }
 
-        // 🔹 Financial calculations
         const inflation = inflationRate / 100;
         const returns = expectedReturns / 100;
 
@@ -106,12 +94,9 @@ exports.getRetirementAnalysis = async (req, res) => {
                 ? (requiredCorpus / n)
                 : (requiredCorpus * r) / (Math.pow((1 + r), n) - 1);
 
-        // 🔹 TEMP: No savings model yet
         const currentMonthlySavings = 0;
-
         const shortfall = monthlyNeeded - currentMonthlySavings;
 
-        // 🔹 AI Analysis
         const analysis = {
             requiredCorpus,
             monthlyInvestmentNeeded: monthlyNeeded,
@@ -128,8 +113,9 @@ exports.getRetirementAnalysis = async (req, res) => {
                     : ["Great job! You are on track."]
         };
 
-        // 🔹 Final response
+        // ✅ Normal response
         return res.json({
+            needsInput: false,
             analysis,
             currentMonthlySavings
         });

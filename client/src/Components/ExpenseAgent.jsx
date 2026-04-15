@@ -6,6 +6,7 @@ import DateFilter from './DateFilter';
 import './ExpenseAgent.css';
 import InsuranceAlert from './InsuranceAlert';
 import RetirementAgent from './RetirementAgent';
+import RetirementForm from './RetirementForm';
 
 const ExpenseAgent = ({setActiveTab}) => {
     
@@ -15,6 +16,7 @@ const ExpenseAgent = ({setActiveTab}) => {
     const [viewMode, setViewMode] = useState('month'); 
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
     const [customLimits, setCustomLimits] = useState({ needs: 50, wants: 30 }); 
+    const [showForm, setShowForm] = useState(false);
 
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -42,33 +44,43 @@ const ExpenseAgent = ({setActiveTab}) => {
         setCustomLimits(prev => ({ ...prev, [name]: parseInt(value) }));
     };
 
-    const fetchRetirement = async () => {
+   const fetchRetirement = async (formData = {}) => {
     const token = localStorage.getItem('token');
-
-    console.log("🚀 Calling Retirement API...");
 
     try {
         const res = await axios.post(
             `${API_URL}/api/retirement/analyze`,
-            {
-                currentAge: 25,
-                targetAge: 60,
-                inflationRate: 6,
-                expectedReturns: 12
-            },
+            formData,
             {
                 headers: { 'x-auth-token': token }
             }
         );
 
-        console.log("✅ SUCCESS:", res.data);   // 👈 MUST print
+        console.log("✅ RESPONSE:", res.data);
+
+        // 🔥 HANDLE NO EXPENSE CASE
+        if (res.data.needsInput) {
+            setRetirementData(null);
+            setShowForm(true); // show form
+            return;
+        }
+
+        // ✅ SUCCESS CASE
         setRetirementData(res.data);
+        setShowForm(false);
 
     } catch (err) {
-        console.log("❌ ERROR STATUS:", err.response?.status);
-        console.log("❌ ERROR DATA:", err.response?.data);
+        const errorMsg = err.response?.data?.message;
+
+        console.log("❌ ERROR:", errorMsg);
+
+        if (errorMsg === "PLAN_REQUIRED") {
+            setRetirementData(null);
+            setShowForm(true); // 🔥 open form
+        }
     }
 };
+// ✅ NOW use it
 useEffect(() => {
     fetchRetirement();
 }, []);
@@ -213,24 +225,50 @@ useEffect(() => {
                 ) : <p className="no-trans">No expenses found for this period.</p>}
             </div>
             <div className="retirement-mini-card">
-                    <h3><FaWallet /> Retirement Forecast</h3>
-                    {retirementData ? (
-                        <div className="ret-content">
-                            <div className="ret-stat">
-                                <span>Target Corpus</span>
-                                <strong>₹{(retirementData.analysis.requiredCorpus / 10000000).toFixed(2)} Cr</strong>
-                            </div>
-                            <div className="progress-bg">
-                                <div 
-                                    className="progress-fill fill-ret" 
-                                    style={{width: `${Math.min((retirementData.currentMonthlySavings / retirementData.analysis.monthlyInvestmentNeeded) * 100, 100)}%`}}
-                                ></div>
-                            </div>
-                            <small>{retirementData.analysis.status === 'On Track' ? '✅ On schedule' : '⚠️ Monthly shortfall detected'}</small>
-                        </div>
-                    ) : <p>Calculating forecast...</p>}
-                </div>
+    <h3><FaWallet /> Retirement Forecast</h3>
+
+    {retirementData ? (
+        <div className="ret-content">
+
+            <div className="ret-stat">
+                <span>Target Corpus</span>
+                <strong>
+                    ₹{(retirementData.analysis.requiredCorpus / 10000000).toFixed(2)} Cr
+                </strong>
+            </div>
+
+            <div className="progress-bg">
+                <div 
+                    className="progress-fill fill-ret" 
+                    style={{
+                        width: `${Math.min(
+                            (retirementData.currentMonthlySavings / retirementData.analysis.monthlyInvestmentNeeded) * 100,
+                            100
+                        )}%`
+                    }}
+                ></div>
+            </div>
+
+            <small>
+                {retirementData.analysis.status === 'On Track'
+                    ? '✅ On schedule'
+                    : '⚠️ Monthly shortfall detected'}
+            </small>
+
         </div>
+    ) : (
+        <div>
+            <p>⚠️ Retirement plan not set</p>
+            <button onClick={() => setShowForm(true)}>
+                Setup Plan →
+            </button>
+        </div>
+    )}
+</div>
+{showForm && (
+    <RetirementForm onSubmit={fetchRetirement} />
+)}
+</div>
     );
 };
 
