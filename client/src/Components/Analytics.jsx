@@ -200,6 +200,14 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                         <span className="sub-text">Potential: +₹{potentialSave}</span>
                     </div>
                 </div>
+                <div className="kpi-card glass-red">
+    <div className="kpi-icon"><FaArrowDown /></div>
+    <div className="kpi-info">
+        <small>Total Expense</small>
+        <h3>₹{(spent/1000).toFixed(1)}k</h3>
+        <span className="badge negative">Outflow</span>
+    </div>
+</div>
 
                 <div className="kpi-card glass-orange">
                     <div className="kpi-icon"><FaWallet /></div>
@@ -218,7 +226,18 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                         <span className="sub-text">{Math.round((saved / (income || 1)) * 100)}% Rate</span>
                     </div>
                 </div>
-            </div>
+            
+            {!stats.hasInsurance && (
+    <div className="kpi-card glass-yellow">
+        <div className="kpi-icon"><FaRegLightbulb /></div>
+        <div className="kpi-info">
+            <small>Insurance</small>
+            <h3>Not Covered</h3>
+            <span className="badge warning">Risk ⚠️</span>
+        </div>
+    </div>
+)}
+</div>
 
             <div className="charts-grid-main">
                 <div className="chart-card large">

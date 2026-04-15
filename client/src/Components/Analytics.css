@@ -354,3 +354,20 @@
         padding: 4px 8px;
     }
 }
+
+.glass-yellow {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.badge.warning {
+    background: #fef3c7;
+    color: #d97706;
+}
+.glass-red {
+    background: linear-gradient(135deg, #fef2f2, #ffffff);
+    border-left: 4px solid #ef4444;
+}
+.badge.negative {
+    background: #fee2e2;
+    color: #dc2626;
+}
