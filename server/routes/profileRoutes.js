@@ -30,7 +30,7 @@ router.post('/', auth, async (req, res) => {
             insurance: {
                 life: insurance?.life || 0,
                 health: insurance?.health || 0,
-                familyDetails: insurance?.familyDetails || ''
+                familyHealthInsurance: insurance?.familyHealthInsurance || 0
             },
             notes: notes || user.profile.notes,
             isProfileComplete: true

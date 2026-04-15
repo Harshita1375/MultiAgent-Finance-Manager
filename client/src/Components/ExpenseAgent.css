@@ -418,3 +418,87 @@
         padding: 10px;
     }
 }
+
+.insurance-prompt-card {
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    border-left: 5px solid #e53e3e;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    animation: slideIn 0.5s ease-out;
+}
+
+.insurance-prompt-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.insurance-prompt-icon {
+    font-size: 2rem;
+    color: #e53e3e;
+}
+
+.insurance-prompt-text {
+    color: #c53030;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+}
+
+.insurance-prompt-btn {
+    background: #e53e3e;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.insurance-prompt-btn:hover {
+    background: #c53030;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.retirement-mini-card {
+    background: #86a0ca;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.ret-stat {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.fill-ret {
+    background: linear-gradient(90deg, #8b5cf6, #d946ef);
+}
+
+.action-link {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    padding: 0;
+    margin-top: 8px;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 0.85rem;
+}
+
+.feedback-card.danger {
+    border-left: 5px solid #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}

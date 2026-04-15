@@ -72,6 +72,6 @@ exports.getPersonalImpact = async (newsArticles, userId) => {
         return personalAlerts;
     } catch (err) {
         console.error("Impact Controller Error:", err);
-        return []; // Return empty array so the app doesn't break
+        return []; 
     }
 };

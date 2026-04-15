@@ -4,13 +4,10 @@ const HF_MODEL = "https://api-inference.huggingface.co/models/facebook/bart-larg
 
 const analyzeMarket = async () => {
     try {
-        // We use the 'everything' endpoint because it's better for specific keywords
-        // Query: We target NSE, BSE, Nifty, and Indian Business
         const newsRes = await axios.get(
-    `https://newsapi.org/v2/everything?domains=economictimes.indiatimes.com,business-standard.com,livemint.com&q=(Nifty OR Sensex OR "Stock Market" OR "RBI")&language=en&sortBy=publishedAt&pageSize=5&apiKey=${process.env.NEWS_API_KEY}`
-);
+            `https://newsapi.org/v2/everything?domains=economictimes.indiatimes.com,business-standard.com,livemint.com&q=(Nifty OR Sensex OR "Stock Market" OR "RBI")&language=en&sortBy=publishedAt&pageSize=5&apiKey=${process.env.NEWS_API_KEY}`
+        );
 
-        // Filter out articles that don't actually mention India just in case
         const articles = newsRes.data.articles
             .filter(art => art.title && !art.title.includes("WSJ") && !art.title.includes("Bloomberg"))
             .slice(0, 3);
@@ -19,9 +16,9 @@ const analyzeMarket = async () => {
             try {
                 const aiRes = await axios.post(
                     HF_MODEL,
-                    { 
+                    {
                         inputs: `Summarize the impact of this news on the Indian economy: ${art.description || art.title}`,
-                        parameters: { wait_for_model: true } 
+                        parameters: { wait_for_model: true }
                     },
                     { headers: { Authorization: `Bearer ${process.env.HF_TOKEN}` } }
                 );

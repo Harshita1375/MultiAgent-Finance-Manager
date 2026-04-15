@@ -18,6 +18,7 @@ import WalletWidget from './WalletWidget';
 import DateFilter from './DateFilter';
 import Settings from './Settings';
 import MarketAgent from './MarketAgent';
+import RetirementAgent from './RetirementAgent';
 
 const Dashboard = () => {
     const [searchParams] = useSearchParams();
@@ -215,10 +216,13 @@ const Dashboard = () => {
                     {activeTab === 'profile-settings' && <Settings/>}
                     
                     {activeTab === 'advisory' && <AdvisoryAgent/>}
-                    {activeTab === 'expense' && <ExpenseAgent />}
+                    {activeTab === 'expense' && (
+  <ExpenseAgent setActiveTab={setActiveTab} />
+)}
                     {activeTab === 'savings' && <SavingAgent />}
                     {activeTab === 'market' && <MarketAgent />}
                     {activeTab === 'notifications' && <Notification />}
+                    {activeTab === 'retirement' && <RetirementAgent />}
                 </div>
             </div>
         </div>

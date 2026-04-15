@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaShieldAlt, FaList, FaChartPie, FaLightbulb, FaExclamationCircle, FaTrophy, FaChartLine } from 'react-icons/fa';
+import { FaShieldAlt, FaList, FaChartPie, FaLightbulb, FaExclamationCircle, FaTrophy, FaChartLine,FaHourglassHalf, FaWallet } from 'react-icons/fa';
 import { Doughnut } from 'react-chartjs-2';
 import DateFilter from './DateFilter'; 
 import './ExpenseAgent.css';
+import InsuranceAlert from './InsuranceAlert';
+import RetirementAgent from './RetirementAgent';
 
-const ExpenseAgent = () => {
+const ExpenseAgent = ({setActiveTab}) => {
+    
     const [analysis, setAnalysis] = useState(null);
+    const [retirementData, setRetirementData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('month'); 
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
@@ -37,6 +41,38 @@ const ExpenseAgent = () => {
         const { name, value } = e.target;
         setCustomLimits(prev => ({ ...prev, [name]: parseInt(value) }));
     };
+
+    const fetchRetirement = async () => {
+    const token = localStorage.getItem('token');
+
+    console.log("🚀 Calling Retirement API...");
+
+    try {
+        const res = await axios.post(
+            `${API_URL}/api/retirement/analyze`,
+            {
+                currentAge: 25,
+                targetAge: 60,
+                inflationRate: 6,
+                expectedReturns: 12
+            },
+            {
+                headers: { 'x-auth-token': token }
+            }
+        );
+
+        console.log("✅ SUCCESS:", res.data);   // 👈 MUST print
+        setRetirementData(res.data);
+
+    } catch (err) {
+        console.log("❌ ERROR STATUS:", err.response?.status);
+        console.log("❌ ERROR DATA:", err.response?.data);
+    }
+};
+useEffect(() => {
+    fetchRetirement();
+}, []);
+  
 
     const getAlertIcon = (type) => {
         if (type === 'danger') return <FaExclamationCircle />;
@@ -85,9 +121,24 @@ const ExpenseAgent = () => {
                     />
                 </div>
             </div>
+    
+    
 
             <div className="ai-feedback-section">
                 <h3>🤖 AI Spending Feedback</h3>
+
+                {retirementData && retirementData.analysis.status === 'Critical' && (
+                    <div className="feedback-card danger">
+                        <div className="feedback-icon"><FaHourglassHalf /></div>
+                        <div className="feedback-content">
+                            <h4>Retirement Warning</h4>
+                            <p>Current spending on <b>Wants (₹{breakdown.wants})</b> is delaying your retirement corpus by approx. 4 years. Increase SIP to bridge the gap.</p>
+                            <button className="action-link" onClick={() => setActiveTab('retirement')}>View Plan →</button>
+                        </div>
+                    </div>
+                )}
+
+                <InsuranceAlert message="Add your insurance plan" setActiveTab={setActiveTab} />
                 <div className="feedback-grid">
                     {analysis.alerts && analysis.alerts.map((alert, idx) => (
                         <div key={idx} className={`feedback-card ${alert.type}`}>
@@ -161,6 +212,24 @@ const ExpenseAgent = () => {
                     </div>
                 ) : <p className="no-trans">No expenses found for this period.</p>}
             </div>
+            <div className="retirement-mini-card">
+                    <h3><FaWallet /> Retirement Forecast</h3>
+                    {retirementData ? (
+                        <div className="ret-content">
+                            <div className="ret-stat">
+                                <span>Target Corpus</span>
+                                <strong>₹{(retirementData.analysis.requiredCorpus / 10000000).toFixed(2)} Cr</strong>
+                            </div>
+                            <div className="progress-bg">
+                                <div 
+                                    className="progress-fill fill-ret" 
+                                    style={{width: `${Math.min((retirementData.currentMonthlySavings / retirementData.analysis.monthlyInvestmentNeeded) * 100, 100)}%`}}
+                                ></div>
+                            </div>
+                            <small>{retirementData.analysis.status === 'On Track' ? '✅ On schedule' : '⚠️ Monthly shortfall detected'}</small>
+                        </div>
+                    ) : <p>Calculating forecast...</p>}
+                </div>
         </div>
     );
 };

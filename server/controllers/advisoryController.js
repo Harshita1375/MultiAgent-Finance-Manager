@@ -40,23 +40,18 @@ exports.getAdvisoryData = async (req, res) => {
             user: userId,
         });
 
-        // Normalize category
         const normalizedGoals = goals.map(g => ({
             ...g.toObject(),
             category: g.category || 'Short-Term'
         }));
 
-        // 1. Logic for Metrics (income, freeCash, etc.)
-        // ... (your existing calculation code)
+     
 
-        // 2. Logic for Goals (Fetching and Grouping)
         const activeGoals = goals.filter(g => g.status !== 'Completed');
         const completedGoals = goals.filter(g => g.status === 'Completed');
 
-        // 3. INITIALIZE ADVICE HERE (Crucial Step)
         const advice = [];
 
-        // 4. Fill the advice array
         if (totalSaved < income * 3) {
             advice.push({
                 type: 'critical',
@@ -65,7 +60,6 @@ exports.getAdvisoryData = async (req, res) => {
             });
         }
 
-        // 5. Group the goals
         const groupedGoals = {
             shortTerm: activeGoals.filter(g => (g.category || 'Short-Term') === 'Short-Term'),
             longTerm: activeGoals.filter(g => g.category === 'Long-Term'),
@@ -73,14 +67,12 @@ exports.getAdvisoryData = async (req, res) => {
             history: completedGoals
         };
 
-        // 6. NOW send the response
         res.json({
             metrics: { income, freeCash, totalSaved },
             goals: groupedGoals,
-            advice // Now 'advice' is safely initialized!
+            advice 
         });
 
-        // Debug logs
         console.log("USER ID:", userId);
         console.log("GOALS FOUND:", normalizedGoals.length);
 
@@ -101,7 +93,7 @@ exports.addGoal = async (req, res) => {
             title,
             targetAmount,
             deadline,
-            category: category || 'Short-Term', // Safety default
+            category: category || 'Short-Term',
             priority: priority || 'Medium'
         });
 
@@ -112,7 +104,6 @@ exports.addGoal = async (req, res) => {
     }
 };
 
-// ... (Other functions remain the same)
 
 exports.updateGoalProgress = async (req, res) => {
     try {

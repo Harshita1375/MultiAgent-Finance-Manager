@@ -14,6 +14,6 @@ const GoalSchema = new mongoose.Schema({
     priority: { type: String, default: 'Medium' },
     status: { type: String, default: 'Active' },
     date: { type: Date, default: Date.now }
-}, { timestamps: true }); // <--- ADD THIS LINE HERE
+}, { timestamps: true }); 
 
 module.exports = mongoose.model('Goal', GoalSchema);

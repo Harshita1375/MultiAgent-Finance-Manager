@@ -28,7 +28,7 @@ const Profile = () => {
 
         lifeInsurance: '',
     healthInsurance: '',
-    familyHealthDetails: '',
+    familyHealthInsurance: '',
 
         partyBudget: '',
 
@@ -94,7 +94,7 @@ const Profile = () => {
                 schoolFees: d.demographics?.schoolFees || '', 
                 lifeInsurance: d.insurance?.life || '',
         healthInsurance: d.insurance?.health || '',
-        familyHealthDetails: d.insurance?.familyDetails || '',
+            familyHealthInsurance: d.insurance?.familyHealthInsurance || '',
                 partyBudget: d.lifestyle?.partyBudget || '',
                 sip: d.savings?.sip || '',
                 fdRd: d.savings?.fdRd || '',
@@ -124,8 +124,7 @@ const Profile = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const isSingleInsuranceEmpty = formData.maritalStatus === 'single' && (!formData.lifeInsurance || !formData.healthInsurance);
-    const isFamilyInsuranceEmpty = formData.maritalStatus === 'married' && !formData.familyHealthDetails;
-
+const isFamilyInsuranceEmpty = formData.maritalStatus === 'married' && !formData.familyHealthInsurance;
     if (isSingleInsuranceEmpty || isFamilyInsuranceEmpty) {
         const confirmSave = window.confirm(
             "⚠️ Insurance details are missing. It's recommended to track these for better financial planning. Do you want to save anyway?"
@@ -158,7 +157,7 @@ const Profile = () => {
                 insurance: {
                 life: formData.lifeInsurance,
                 health: formData.healthInsurance,
-                familyDetails: formData.familyHealthDetails
+                familyHealthInsurance: formData.familyHealthInsurance
             },
         
                 savings: {
@@ -302,48 +301,47 @@ const Profile = () => {
                     </div>
                 </div>
 
-                <h3>🛡️ Insurance Details</h3>
+                <div className="form-section">
+    <h3>🛡️ Insurance Details</h3>
     <div className="grid-2-col">
-        {/* Life Insurance - specifically for Single users */}
-        {formData.maritalStatus === 'single' && (
-            <div className="input-group">
-                <label>Life Insurance EMI</label>
-                <input 
-                    type="number" 
-                    name="lifeInsurance" 
-                    placeholder="Monthly Premium" 
-                    value={formData.lifeInsurance} 
-                    onChange={handleChange} 
-                />
-            </div>
-        )}
-
-        {/* Health Insurance - Logic changes based on status */}
         <div className="input-group">
-            <label>
-                {formData.maritalStatus === 'married' 
-                    ? "Health Insurance (Family Cover Details)" 
-                    : "Personal Health Insurance"}
-            </label>
-            {formData.maritalStatus === 'married' ? (
-                <textarea 
-                    name="familyHealthDetails" 
-                    placeholder="e.g. Spouse: ₹500, Child: ₹300..." 
-                    value={formData.familyHealthDetails} 
-                    onChange={handleChange}
-                    rows="2"
-                />
-            ) : (
-                <input 
-                    type="number" 
-                    name="healthInsurance" 
-                    placeholder="Monthly Premium" 
-                    value={formData.healthInsurance} 
-                    onChange={handleChange} 
-                />
-            )}
+            <label>Life Insurance Premium</label>
+            <input
+                type="number"
+                name="lifeInsurance"
+                value={formData.lifeInsurance}
+                onChange={handleChange}
+                placeholder="₹ Yearly/Monthly Premium"
+            />
+        </div>
+        <div className="input-group">
+            <label>Health Insurance Premium</label>
+            <input
+                type="number"
+                name="healthInsurance"
+                value={formData.healthInsurance}
+                onChange={handleChange}
+                placeholder="₹ Yearly/Monthly Premium"
+            />
         </div>
     </div>
+
+    {/* Show Family Details if Married */}
+    {formData.maritalStatus === 'married' && (
+        <div className="input-group highlight-input">
+                <label>Family Health Insurance</label>
+                <input
+                    type="number"
+                    name="familyHealthInsurance"
+                    value={formData.familyHealthInsurance}
+                    onChange={handleChange}
+                    placeholder="₹ Family Floater Premium"
+                />
+            </div>
+    )}
+</div>
+
+
                 <div className="form-section">
                     <h3>🐷 Current Savings & Assets</h3>
                     <div className="grid-3-col">

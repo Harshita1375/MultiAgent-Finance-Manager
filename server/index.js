@@ -33,6 +33,8 @@ app.use('/api/notifications', require('./routes/notificationsRoutes'));
 app.use('/api/wallet', require('./routes/walletRoutes'));
 app.use('/api/agent/advisory', require('./routes/advisoryRoutes'));   
 app.use('/api/agent/market', require('./routes/MarketRoutes'));
+app.use('/api/retirement', require('./routes/retirementRoutes'));
+console.log("REached R api"); // New retirement route
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server started on port ${PORT}`));

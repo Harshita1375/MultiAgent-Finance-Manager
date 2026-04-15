@@ -65,6 +65,17 @@ const generateFixedTransactions = (record) => {
                 isFixed: true
             });
         }
+        if (record.insurance.familyHealthInsurance > 0) {
+        fixedList.push({
+            _id: `ins-family-${record._id}`,
+            title: 'Family Health Insurance',
+            amount: record.insurance.familyHealthInsurance,
+            category: 'Insurance',
+            type: 'need',
+            date: date,
+            isFixed: true
+        });
+    }
     }
 
     // 3. ADD THIS: Map Notes as a "Remark" transaction (if it has a value)
@@ -83,30 +94,28 @@ const generateFixedTransactions = (record) => {
     return fixedList;
 };
 
+    // controllers/recordController.js
 exports.saveMonthlyRecord = async (req, res) => {
     try {
         const { month, income, expenses, savings, insurance, notes } = req.body;
 
-        // Perform the update
+        // Log the incoming insurance data to verify what the backend receives
+        console.log("Incoming Insurance Data:", insurance);
+
         let record = await MonthlyRecord.findOneAndUpdate(
             { user: req.user.id, month: month },
-            { income, expenses, savings, insurance, notes },
+            { $set: { income, expenses, savings, insurance, notes } },
             { new: true, upsert: true, runValidators: true } 
         );
 
-        console.log("✅ Data Saved Successfully:", record.month);
         res.json(record);
     } catch (err) {
-        // DETECT SPECIFIC FAILURES
-        if (err.name === 'ValidationError') {
-            console.error("❌ Mongoose Validation Error:", err.message);
-            return res.status(400).json({ msg: "Data format error", detail: err.message });
-        }
-        
-        console.error("❌ Server Error during save:", err.message);
-        res.status(500).json({ msg: "Internal Server Error", error: err.message });
+        // This will catch if familyHealthInsurance is the wrong type (e.g. string instead of number)
+        console.error("❌ Save Error:", err.message);
+        res.status(400).json({ msg: "Failed to save insurance data", error: err.message });
     }
 };
+
 
 exports.getMonthlyRecord = async (req, res) => {
     try {
@@ -275,13 +284,34 @@ exports.getSpendingAnalysis = async (req, res) => {
              feedback.push({ type: 'info', title: 'No Data', msg: 'Add income in Profile to get insights.' });
         }
 
-        res.json({
-            breakdown: { needs: totalNeeds, wants: totalWants, savings: totalSavings },
-            limits,
-            alerts: feedback,
-            transactions: combinedTransactions,
-            categories: categoryMap
-        });
+        // 🔥 ADD THIS BEFORE res.json
+let totalInsurance = 0;
+monthlyRecords.forEach(record => {
+    if (record.insurance) {
+        totalInsurance += (Number(record.insurance.life) || 0) + 
+                         (Number(record.insurance.health) || 0) + 
+                         (Number(record.insurance.familyHealthInsurance) || 0);
+    }
+});
+
+if (totalInsurance === 0) {
+    feedback.push({
+        type: 'insurance-alert',
+        title: '🛡️ Protection Gap',
+        msg: 'You have not taken any insurance plan. It is highly recommended to secure your future.'
+    });
+}
+
+// ✅ THEN send response
+res.json({
+    breakdown: { needs: totalNeeds, wants: totalWants, savings: totalSavings },
+    limits,
+    alerts: feedback,
+    transactions: combinedTransactions,
+    categories: categoryMap
+});
+
+        
 
     } catch (err) {
         console.error("Analysis Error:", err);
