@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaShieldAlt, FaList, FaChartPie, FaLightbulb, FaExclamationCircle, FaTrophy, FaChartLine,FaHourglassHalf, FaWallet } from 'react-icons/fa';
+import { FaShieldAlt, FaList, FaChartPie, FaLightbulb, FaExclamationCircle, FaTrophy, FaChartLine, FaHourglassHalf, FaWallet } from 'react-icons/fa';
 import { Doughnut } from 'react-chartjs-2';
-import DateFilter from './DateFilter'; 
+import DateFilter from './DateFilter';
 import './ExpenseAgent.css';
 import InsuranceAlert from './InsuranceAlert';
 import RetirementAgent from './RetirementAgent';
 import RetirementForm from './RetirementForm';
 
-const ExpenseAgent = ({setActiveTab}) => {
-    
+const ExpenseAgent = ({ setActiveTab }) => {
+
     const [analysis, setAnalysis] = useState(null);
     const [retirementData, setRetirementData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [viewMode, setViewMode] = useState('month'); 
+    const [viewMode, setViewMode] = useState('month');
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
-    const [customLimits, setCustomLimits] = useState({ needs: 50, wants: 30 }); 
+    const [customLimits, setCustomLimits] = useState({ needs: 50, wants: 30 });
     const [showForm, setShowForm] = useState(false);
 
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -44,47 +44,45 @@ const ExpenseAgent = ({setActiveTab}) => {
         setCustomLimits(prev => ({ ...prev, [name]: parseInt(value) }));
     };
 
-   const fetchRetirement = async (formData = {}) => {
-    const token = localStorage.getItem('token');
+    const fetchRetirement = async (formData = {}) => {
+        const token = localStorage.getItem('token');
 
-    try {
-        const res = await axios.post(
-            `${API_URL}/api/retirement/analyze`,
-            formData,
-            {
-                headers: { 'x-auth-token': token }
+        try {
+            const res = await axios.post(
+                `${API_URL}/api/retirement/analyze`,
+                formData,
+                {
+                    headers: { 'x-auth-token': token }
+                }
+            );
+
+            console.log("✅ RESPONSE:", res.data);
+
+            // 🔥 HANDLE NO EXPENSE CASE
+            if (res.data.needsInput) {
+                setRetirementData(null);
+                setShowForm(true); // show form
+                return;
             }
-        );
 
-        console.log("✅ RESPONSE:", res.data);
+            setRetirementData(res.data);
+            setShowForm(false);
 
-        // 🔥 HANDLE NO EXPENSE CASE
-        if (res.data.needsInput) {
-            setRetirementData(null);
-            setShowForm(true); // show form
-            return;
+        } catch (err) {
+            const errorMsg = err.response?.data?.message;
+
+            console.log("❌ ERROR:", errorMsg);
+
+            if (errorMsg === "PLAN_REQUIRED") {
+                setRetirementData(null);
+                setShowForm(true); 
+            }
         }
+    };
+    useEffect(() => {
+        fetchRetirement();
+    }, []);
 
-        // ✅ SUCCESS CASE
-        setRetirementData(res.data);
-        setShowForm(false);
-
-    } catch (err) {
-        const errorMsg = err.response?.data?.message;
-
-        console.log("❌ ERROR:", errorMsg);
-
-        if (errorMsg === "PLAN_REQUIRED") {
-            setRetirementData(null);
-            setShowForm(true); // 🔥 open form
-        }
-    }
-};
-// ✅ NOW use it
-useEffect(() => {
-    fetchRetirement();
-}, []);
-  
 
     const getAlertIcon = (type) => {
         if (type === 'danger') return <FaExclamationCircle />;
@@ -97,7 +95,7 @@ useEffect(() => {
     if (!analysis) return <div className="agent-empty">No data found.</div>;
 
     const { breakdown = {}, transactions = [], categories = {} } = analysis;
-    const income = analysis.limits ? (analysis.limits.needs / 0.5) : 0; 
+    const income = analysis.limits ? (analysis.limits.needs / 0.5) : 0;
 
     const dynamicLimits = {
         needs: income * (customLimits.needs / 100),
@@ -125,19 +123,28 @@ useEffect(() => {
                 </div>
 
                 <div className="view-controls">
-                    <DateFilter 
-                        viewMode={viewMode} 
+                    <DateFilter
+                        viewMode={viewMode}
                         setViewMode={setViewMode}
                         selectedMonth={selectedMonth}
                         setSelectedMonth={setSelectedMonth}
                     />
                 </div>
             </div>
-    
-    
+
+
 
             <div className="ai-feedback-section">
                 <h3>🤖 AI Spending Feedback</h3>
+                {(!analysis || transactions.length === 0) && (
+        <div className="feedback-card warning">
+            <div className="feedback-icon"><FaLightbulb /></div>
+            <div className="feedback-content">
+                <h4>Setup Recommended</h4>
+                <p>No expense data found. Please configure your <b>Custom Limit Tracker</b> below to begin analysis.</p>
+            </div>
+        </div>
+    )}
 
                 {retirementData && retirementData.analysis.status === 'Critical' && (
                     <div className="feedback-card danger">
@@ -167,29 +174,29 @@ useEffect(() => {
             <div className="visuals-grid">
                 <div className="limits-card">
                     <h3><FaList /> Custom Limit Tracker</h3>
-                    
+
                     <div className="slider-container">
                         <label>Needs Limit: {customLimits.needs}%</label>
-                        <input 
-                            type="range" name="needs" min="10" max="80" 
+                        <input
+                            type="range" name="needs" min="10" max="80"
                             value={customLimits.needs} onChange={handleLimitChange} className="slider"
                         />
                     </div>
                     <div className="limit-row">
                         <div className="limit-label"><span>Actual Needs</span><small>₹{breakdown.needs || 0} / ₹{dynamicLimits.needs.toFixed(0)}</small></div>
-                        <div className="progress-bg"><div className="progress-fill fill-needs" style={{width: `${Math.min(((breakdown.needs)/(dynamicLimits.needs||1))*100, 100)}%`}}></div></div>
+                        <div className="progress-bg"><div className="progress-fill fill-needs" style={{ width: `${Math.min(((breakdown.needs) / (dynamicLimits.needs || 1)) * 100, 100)}%` }}></div></div>
                     </div>
 
                     <div className="slider-container">
                         <label>Wants Limit: {customLimits.wants}%</label>
-                        <input 
-                            type="range" name="wants" min="5" max="50" 
+                        <input
+                            type="range" name="wants" min="5" max="50"
                             value={customLimits.wants} onChange={handleLimitChange} className="slider"
                         />
                     </div>
                     <div className="limit-row">
                         <div className="limit-label"><span>Actual Wants</span><small>₹{breakdown.wants || 0} / ₹{dynamicLimits.wants.toFixed(0)}</small></div>
-                        <div className="progress-bg"><div className="progress-fill fill-wants" style={{width: `${Math.min(((breakdown.wants)/(dynamicLimits.wants||1))*100, 100)}%`}}></div></div>
+                        <div className="progress-bg"><div className="progress-fill fill-wants" style={{ width: `${Math.min(((breakdown.wants) / (dynamicLimits.wants || 1)) * 100, 100)}%` }}></div></div>
                     </div>
                 </div>
 
@@ -225,50 +232,53 @@ useEffect(() => {
                 ) : <p className="no-trans">No expenses found for this period.</p>}
             </div>
             <div className="retirement-mini-card">
-    <h3><FaWallet /> Retirement Forecast</h3>
+                <h3><FaWallet /> Retirement Forecast</h3>
 
-    {retirementData ? (
-        <div className="ret-content">
+                {retirementData ? (
+                    <div className="ret-content">
 
-            <div className="ret-stat">
-                <span>Target Corpus</span>
-                <strong>
-                    ₹{(retirementData.analysis.requiredCorpus / 10000000).toFixed(2)} Cr
-                </strong>
+                        <div className="ret-stat">
+                            <span>Target Corpus</span>
+                            <strong>
+                                ₹{(retirementData.analysis.requiredCorpus / 10000000).toFixed(2)} Cr
+                            </strong>
+                        </div>
+
+                        <div className="progress-bg">
+                            <div
+                                className="progress-fill fill-ret"
+                                style={{
+                                    width: `${Math.min(
+                                        (retirementData.currentMonthlySavings / retirementData.analysis.monthlyInvestmentNeeded) * 100,
+                                        100
+                                    )}%`
+                                }}
+                            ></div>
+                        </div>
+
+                        <small>
+                            {retirementData.analysis.status === 'On Track'
+                                ? '✅ On schedule'
+                                : '⚠️ Monthly shortfall detected'}
+                        </small>
+
+                    </div>
+                ) : (
+                    <div>
+                        <p>⚠️ Retirement plan not set</p>
+                        <button onClick={() => setShowForm(true)}>
+                            Setup Plan →
+                        </button>
+                    </div>
+                )}
             </div>
-
-            <div className="progress-bg">
-                <div 
-                    className="progress-fill fill-ret" 
-                    style={{
-                        width: `${Math.min(
-                            (retirementData.currentMonthlySavings / retirementData.analysis.monthlyInvestmentNeeded) * 100,
-                            100
-                        )}%`
-                    }}
-                ></div>
-            </div>
-
-            <small>
-                {retirementData.analysis.status === 'On Track'
-                    ? '✅ On schedule'
-                    : '⚠️ Monthly shortfall detected'}
-            </small>
-
-        </div>
-    ) : (
-        <div>
-            <p>⚠️ Retirement plan not set</p>
-            <button onClick={() => setShowForm(true)}>
-                Setup Plan →
-            </button>
-        </div>
-    )}
-</div>
-{showForm && (
-    <RetirementForm onSubmit={fetchRetirement} />
+            {showForm && (
+    <RetirementForm 
+        onSubmit={fetchRetirement} 
+        onClose={() => setShowForm(false)} 
+    />
 )}
-</div>
+        </div>
     );
 };
 

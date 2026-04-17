@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./RetirementForm.css";
 
-const RetirementForm = ({ onSubmit }) => {
+const RetirementForm = ({ onSubmit,onClose }) => {
     const [form, setForm] = useState({
         currentAge: 25,
         targetAge: 60,
@@ -13,16 +13,17 @@ const RetirementForm = ({ onSubmit }) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSubmit(form);
+        await onSubmit(form);
+        onClose();
     };
 
     return (
         <div className="ret-form-overlay">
             <div className="ret-form-card">
-                <h2 className="heading">AI Retirement Strategist</h2>
-
+                <button onClick={onClose} className="close-btn">✖</button>
+<h2 className="heading">AI Retirement Strategist</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Current Age</label>

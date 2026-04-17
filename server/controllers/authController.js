@@ -20,6 +20,7 @@ exports.register = async (req, res) => {
         );
     } catch (err) {
         res.status(500).send('Server Error');
+        console.error(err.message);
     }
 };
 
