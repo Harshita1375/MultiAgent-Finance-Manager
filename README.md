@@ -118,89 +118,47 @@ We have pre-loaded a **Demo User** with 6 months of realistic financial history�
 
 ## 📂 Project Structure
 
-The project is divided into a **Client** (React Frontend) and **Server** (Node.js Backend), following a modular architecture where each "Agent" has its own dedicated Controller, Route, and Component.
-
+```bash
 MultiAgent-Finance-Manager/
 │
-├── client/                         # Frontend (React.js)
+├── client/
 │   ├── public/
-│   │
 │   └── src/
-│       ├── Assest/                 # Static images (Growth, Secure, etc.)
-│       │
-│       ├── Components/             # UI Modules (Agents & Features)
-│       │   ├── AdvisoryAgent.jsx       # Fiscal Profile & Insights
-│       │   ├── Analytics.jsx           # Data Visualization & Trends
-│       │   ├── Auth.jsx                # Login / Signup
-│       │   ├── Dashboard.jsx           # Main Control Center
-│       │   ├── ExpenseAgent.jsx        # Expense Tracking & Categorization
-│       │   ├── GoalHistory.jsx         # Goal Tracking (Short/Long/Retirement)
-│       │   ├── MarketAgent.jsx         # Market News & Insights
-│       │   ├── Notification.jsx        # Alerts System
-│       │   ├── Profile.jsx             # User Profile Management
-│       │   ├── RetirementAgent.jsx     # Retirement Planning Module
-│       │   ├── SavingAgent.jsx         # Wealth & Investment Planning
-│       │   ├── Settings.jsx            # Dynamic Profile Engine
-│       │   ├── TransactionHistory.jsx # Financial Records Viewer
-│       │   └── WalletWidget.jsx        # Daily Burn Rate Tracker
-│       │
-│       ├── App.js                  # Main Router
-│       └── index.js               # Entry Point
+│       ├── Assest/
+│       ├── Components/
+│       │   ├── AdvisoryAgent.jsx
+│       │   ├── Analytics.jsx
+│       │   ├── Auth.jsx
+│       │   ├── Dashboard.jsx
+│       │   ├── ExpenseAgent.jsx
+│       │   ├── GoalHistory.jsx
+│       │   ├── MarketAgent.jsx
+│       │   ├── Notification.jsx
+│       │   ├── Profile.jsx
+│       │   ├── RetirementAgent.jsx
+│       │   ├── SavingAgent.jsx
+│       │   ├── Settings.jsx
+│       │   ├── TransactionHistory.jsx
+│       │   └── WalletWidget.jsx
+│       ├── App.js
+│       └── index.js
 │
-├── server/                         # Backend (Node.js / Express)
+├── server/
 │   ├── config/
-│   │   ├── db.js                  # MongoDB Connection
-│   │   └── passport.js            # Authentication Strategy
-│   │
-│   ├── controllers/               # 🧠 Multi-Agent Logic
-│   │   ├── advisoryController.js      # Financial Analysis & Efficiency
-│   │   ├── analyticsController.js     # Data Insights & Trends
-│   │   ├── authController.js          # Authentication Logic
-│   │   ├── expenseAgentController.js  # Expense Categorization
-│   │   ├── expenseController.js       # CRUD for Expenses
-│   │   ├── marketController.js        # Market News & NLP Insights
-│   │   ├── notificationController.js  # Alerts & Events
-│   │   ├── recordController.js        # Monthly Records Handling
-│   │   ├── retirementController.js    # Retirement Planning Logic
-│   │   ├── savingAgentController.js   # Savings & Investment Logic
-│   │   └── walletController.js        # Daily Burn Rate
-│   │
+│   ├── controllers/
 │   ├── middleware/
-│   │   └── auth.js                # JWT Authentication Middleware
-│   │
-│   ├── models/                   # Database Schemas (Mongoose)
-│   │   ├── Expense.js            # Transactions
-│   │   ├── Goal.js               # Goals (Short/Long/Retirement)
-│   │   ├── MonthlyRecord.js      # Historical Data
-│   │   ├── Notification.js       # Alerts
-│   │   ├── RetirementPlan.js     # Retirement Planning
-│   │   └── User.js               # User Profile
-│   │
-│   ├── routes/                   # API Endpoints
-│   │   ├── advisoryRoutes.js
-│   │   ├── analyticsRoutes.js
-│   │   ├── authRoutes.js
-│   │   ├── expenseAgentRoutes.js
-│   │   ├── expenseRoutes.js
-│   │   ├── marketRoutes.js
-│   │   ├── notificationRoutes.js
-│   │   ├── profileRoutes.js
-│   │   ├── recordRoutes.js
-│   │   ├── retirementRoutes.js
-│   │   ├── savingAgentRoutes.js
-│   │   └── walletRoutes.js
-│   │
-│   ├── GuestUser.js              # 🌱 Demo Data Seeder
-│   ├── index.js                  # Server Entry Point
-│   └── .env                      # Environment Variables
+│   ├── models/
+│   ├── routes/
+│   ├── GuestUser.js
+│   ├── index.js
+│   └── .env
 │
-├── docs/                         # Documentation
-│   └── STOCK_SELECTION_STRATEGY.md 
-│   └── FinSync_Litrature Review.pdf
-│   └── FinSync_Case Study.pdf  
+├── docs/
+│   ├── STOCK_SELECTION_STRATEGY.md
+│   ├── FinSync_Literature_Review.pdf
+│   └── FinSync_Case_Study.pdf
 │
-├── .gitignore
-├── LICENSE                       # MIT License
+├── LICENSE
 ├── package.json
 └── README.md
 ```
@@ -250,7 +208,7 @@ API Fallback: If the external stock market API (Yahoo Finance) is down or rate-l
 
 Safety-First Algorithms: The trading engine is hard-coded to prioritize ETF and Bluechip safety over volatility.
 
-## 📚 Documentation
+---
 
 ## 📚 Documentation & Reports
 
