@@ -75,7 +75,7 @@ const ExpenseAgent = ({ setActiveTab }) => {
 
             if (errorMsg === "PLAN_REQUIRED") {
                 setRetirementData(null);
-                setShowForm(true); 
+                setShowForm(true);
             }
         }
     };
@@ -137,14 +137,14 @@ const ExpenseAgent = ({ setActiveTab }) => {
             <div className="ai-feedback-section">
                 <h3>🤖 AI Spending Feedback</h3>
                 {(!analysis || transactions.length === 0) && (
-        <div className="feedback-card warning">
-            <div className="feedback-icon"><FaLightbulb /></div>
-            <div className="feedback-content">
-                <h4>Setup Recommended</h4>
-                <p>No expense data found. Please configure your <b>Custom Limit Tracker</b> below to begin analysis.</p>
-            </div>
-        </div>
-    )}
+                    <div className="feedback-card warning">
+                        <div className="feedback-icon"><FaLightbulb /></div>
+                        <div className="feedback-content">
+                            <h4>Setup Recommended</h4>
+                            <p>No expense data found. Please configure your <b>Custom Limit Tracker</b> below to begin analysis.</p>
+                        </div>
+                    </div>
+                )}
 
                 {retirementData && retirementData.analysis.status === 'Critical' && (
                     <div className="feedback-card danger">
@@ -273,11 +273,11 @@ const ExpenseAgent = ({ setActiveTab }) => {
                 )}
             </div>
             {showForm && (
-    <RetirementForm 
-        onSubmit={fetchRetirement} 
-        onClose={() => setShowForm(false)} 
-    />
-)}
+                <RetirementForm
+                    onSubmit={fetchRetirement}
+                    onClose={() => setShowForm(false)}
+                />
+            )}
         </div>
     );
 };

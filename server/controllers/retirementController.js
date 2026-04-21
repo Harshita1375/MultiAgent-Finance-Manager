@@ -23,26 +23,25 @@ exports.getRetirementAnalysis = async (req, res) => {
 
         // 🔹 If no plan → use frontend input
         if (!plan) {
-    const { currentAge, targetAge, inflationRate, expectedReturns } = req.body || {};
+            const { currentAge, targetAge, inflationRate, expectedReturns } = req.body || {};
 
-    // ❌ If no input → ask frontend
-    if (!currentAge) {
-        return res.status(400).json({ message: "PLAN_REQUIRED" });
-    }
+            // ❌ If no input → ask frontend
+            if (!currentAge) {
+                return res.status(400).json({ message: "PLAN_REQUIRED" });
+            }
 
-    // ✅ Create and save plan
-    plan = new RetirementPlan({
-        user: userId,
-        currentAge,
-        targetAge,
-        inflationRate,
-        expectedReturns
-    });
+            plan = new RetirementPlan({
+                user: userId,
+                currentAge,
+                targetAge,
+                inflationRate,
+                expectedReturns
+            });
 
-    await plan.save();
+            await plan.save();
 
-    console.log("✅ New retirement plan created");
-}
+            console.log("✅ New retirement plan created");
+        }
 
         // 🔹 Calculate Needs/Wants
         let totalNeeds = 0;
@@ -105,8 +104,8 @@ exports.getRetirementAnalysis = async (req, res) => {
                 shortfall <= 0
                     ? 'On Track'
                     : shortfall < monthlyNeeded * 0.3
-                    ? 'Lagging'
-                    : 'Critical',
+                        ? 'Lagging'
+                        : 'Critical',
             aiSuggestions:
                 shortfall > 0
                     ? [`You have a monthly shortfall of ₹${shortfall.toFixed(0)}.`]

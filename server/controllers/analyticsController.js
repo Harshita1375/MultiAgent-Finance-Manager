@@ -10,10 +10,10 @@ exports.getUserAnalytics = async (req, res) => {
         // 1. Define Date Range for filtering
         let recordQuery = { user: userId };
         let expenseQuery = { user: userId };
-        
+
         if (month && month !== 'all') {
             recordQuery.month = month;
-            
+
             // Calculate date range for Expenses collection
             const [year, monthNum] = month.split('-');
             const startDate = new Date(year, monthNum - 1, 1);
@@ -34,13 +34,13 @@ exports.getUserAnalytics = async (req, res) => {
 
         records.forEach(rec => {
             totalIncome += (rec.income || 0);
-            
+
             const exp = rec.expenses || {};
-            totalFixed += (exp.rent||0) + (exp.emi||0) + (exp.grocery||0) + (exp.electricity||0) + 
-                          (exp.schoolFees||0) + (exp.otherBills||0) + (exp.subscriptions||0);
-            
+            totalFixed += (exp.rent || 0) + (exp.emi || 0) + (exp.grocery || 0) + (exp.electricity || 0) +
+                (exp.schoolFees || 0) + (exp.otherBills || 0) + (exp.subscriptions || 0);
+
             const sav = rec.savings || {};
-            totalInvested += (sav.sip||0) + (sav.fdRd||0) + (sav.gold||0);
+            totalInvested += (sav.sip || 0) + (sav.fdRd || 0) + (sav.gold || 0);
         });
 
         // Sum up variable expenses (Wallet + Manual)
@@ -49,7 +49,7 @@ exports.getUserAnalytics = async (req, res) => {
         // 4. Calculate "True Savings"
         const totalSpent = totalFixed + totalVariable;
         // True Savings = Money you kept (Investments + Unspent Cash)
-        const totalSaved = Math.max(0, totalIncome - totalSpent); 
+        const totalSaved = Math.max(0, totalIncome - totalSpent);
 
         // 5. Get Top 3 Recent Transactions (For Display)
         const recentTransactions = variableExpenses.slice(0, 3).map(tx => ({
@@ -82,12 +82,12 @@ exports.getUserAnalytics = async (req, res) => {
         // --- CHART DATA (Wallet Pulse) ---
         const dailyWalletData = Array(7).fill(0);
         const today = new Date();
-        today.setHours(0,0,0,0);
-        
+        today.setHours(0, 0, 0, 0);
+
         variableExpenses.forEach(exp => {
             // Only count recent ones for the chart
             const d = new Date(exp.date);
-            d.setHours(0,0,0,0);
+            d.setHours(0, 0, 0, 0);
             const diff = Math.floor((today - d) / (1000 * 60 * 60 * 24));
             if (diff >= 0 && diff < 7) dailyWalletData[6 - diff] += exp.amount;
         });
@@ -97,17 +97,17 @@ exports.getUserAnalytics = async (req, res) => {
             totalIncome,
             totalSpent,
             totalSaved, // This is now Dynamic (Income - Spent)
-            
+
             breakdown: {
                 fixed: totalFixed,
                 wants: totalVariable,
                 savings: totalInvested // Only planned investments
             },
-            
+
             recentTransactions,
             upcomingTransactions,
             walletHistory: dailyWalletData,
-            
+
             scores: {
                 savingsRate: totalIncome > 0 ? Math.round((totalSaved / totalIncome) * 100) : 0,
                 liquidity: totalSaved > 0 ? 80 : 20

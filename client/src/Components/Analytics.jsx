@@ -1,27 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { 
+import {
     FaChartLine, FaWallet, FaPiggyBank, FaArrowUp, FaRegLightbulb,
-    FaArrowDown, FaClock, FaReceipt, FaMoneyBillWave 
+    FaArrowDown, FaClock, FaReceipt, FaMoneyBillWave
 } from 'react-icons/fa';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
-import './Analytics.css'; 
+import './Analytics.css';
 
 import {
-  Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, 
-  BarElement, Title, Tooltip, Legend, ArcElement, Filler
+    Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement,
+    BarElement, Title, Tooltip, Legend, ArcElement, Filler
 } from 'chart.js';
 
 ChartJS.register(
-  CategoryScale, LinearScale, PointElement, LineElement, BarElement, 
-  Title, Tooltip, Legend, ArcElement, Filler
+    CategoryScale, LinearScale, PointElement, LineElement, BarElement,
+    Title, Tooltip, Legend, ArcElement, Filler
 );
 
 const Analytics = ({ viewMode, selectedMonth }) => {
     const [stats, setStats] = useState(null);
     const [advisoryPlan, setAdvisoryPlan] = useState(null);
     const [loading, setLoading] = useState(true);
-    
+
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
     useEffect(() => {
@@ -37,7 +37,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
             const resStats = await axios.get(`${API_URL}/api/analytics${params}`, {
                 headers: { 'x-auth-token': token }
             });
-            
+
             let planData = null;
             try {
                 const resPlan = await axios.get(`${API_URL}/api/agent/advisory/plan`, {
@@ -59,7 +59,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
     if (!stats) return <div className="loading-state">No Data Available</div>;
 
     const breakdown = stats.breakdown || { fixed: 0, wants: 0, savings: 0 };
-    const walletHistory = stats.walletHistory || [0,0,0,0,0,0,0];
+    const walletHistory = stats.walletHistory || [0, 0, 0, 0, 0, 0, 0];
     const income = stats.totalIncome || 0;
     const spent = stats.totalSpent || 0;
     const saved = stats.totalSaved || 0;
@@ -77,7 +77,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
     };
 
     const getLast7DaysLabels = () => {
-        const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; 
+        const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
         const labels = [];
         for (let i = 6; i >= 0; i--) {
             const d = new Date();
@@ -91,7 +91,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
         labels: getLast7DaysLabels(),
         datasets: [{
             label: 'Daily Spend',
-            data: walletHistory, 
+            data: walletHistory,
             backgroundColor: '#f59e0b',
             borderRadius: 4,
             barThickness: 10
@@ -99,17 +99,17 @@ const Analytics = ({ viewMode, selectedMonth }) => {
     };
 
     const cashFlowData = {
-        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], 
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
         datasets: [
             {
                 label: 'Income',
-                data: Array(4).fill(income), 
-                borderColor: '#10b981', 
+                data: Array(4).fill(income),
+                borderColor: '#10b981',
                 borderWidth: 2,
                 pointRadius: 0,
                 borderDash: [5, 5],
                 fill: true,
-                backgroundColor: (context) => { 
+                backgroundColor: (context) => {
                     const ctx = context.chart.ctx;
                     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
                     gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
@@ -119,8 +119,8 @@ const Analytics = ({ viewMode, selectedMonth }) => {
             },
             {
                 label: 'Expenses',
-                data: [spent * 0.2, spent * 0.45, spent * 0.85, spent], 
-                borderColor: '#f59e0b', 
+                data: [spent * 0.2, spent * 0.45, spent * 0.85, spent],
+                borderColor: '#f59e0b',
                 backgroundColor: (context) => {
                     const ctx = context.chart.ctx;
                     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
@@ -129,7 +129,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                     return gradient;
                 },
                 borderWidth: 3,
-                tension: 0.4, 
+                tension: 0.4,
                 fill: true,
                 pointBackgroundColor: '#fff',
                 pointBorderColor: '#f59e0b',
@@ -137,17 +137,17 @@ const Analytics = ({ viewMode, selectedMonth }) => {
             },
             {
                 label: 'Savings Trend',
-                data: [saved * 0.1, saved * 0.3, saved * 0.65, saved], 
-                borderColor: '#8b5cf6', 
+                data: [saved * 0.1, saved * 0.3, saved * 0.65, saved],
+                borderColor: '#8b5cf6',
                 backgroundColor: (context) => {
                     const ctx = context.chart.ctx;
                     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.5)'); 
+                    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
                     gradient.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
                     return gradient;
                 },
                 borderWidth: 3,
-                tension: 0.4, 
+                tension: 0.4,
                 fill: true,
                 pointBackgroundColor: '#fff',
                 pointBorderColor: '#8b5cf6',
@@ -182,13 +182,13 @@ const Analytics = ({ viewMode, selectedMonth }) => {
 
     return (
         <div className="analytics-container">
-            
+
             <div className="kpi-grid">
                 <div className="kpi-card glass-blue">
                     <div className="kpi-icon"><FaMoneyBillWave /></div>
                     <div className="kpi-info">
                         <small>Earnings</small>
-                        <h3>₹{(income/1000).toFixed(1)}k</h3>
+                        <h3>₹{(income / 1000).toFixed(1)}k</h3>
                         <span className="badge positive">Income</span>
                     </div>
                 </div>
@@ -202,21 +202,21 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                     </div>
                 </div>
                 <div className="kpi-card glass-red">
-    <div className="kpi-icon"><FaArrowDown /></div>
-    <div className="kpi-info">
-        <small>Total Expense</small>
-        <h3>₹{(spent/1000).toFixed(1)}k</h3>
-        <span className="badge negative">Outflow</span>
-    </div>
-</div>
-<div className="kpi-card glass-pink">
-    <div className="kpi-icon"><FaChartLine /></div>
-    <div className="kpi-info">
-        <small>Total Users</small>
-        <h3>{totalUsers.toLocaleString()}</h3>
-        <span className="badge positive">Registered</span>
-    </div>
-</div>
+                    <div className="kpi-icon"><FaArrowDown /></div>
+                    <div className="kpi-info">
+                        <small>Total Expense</small>
+                        <h3>₹{(spent / 1000).toFixed(1)}k</h3>
+                        <span className="badge negative">Outflow</span>
+                    </div>
+                </div>
+                <div className="kpi-card glass-pink">
+                    <div className="kpi-icon"><FaChartLine /></div>
+                    <div className="kpi-info">
+                        <small>Total Users</small>
+                        <h3>{totalUsers.toLocaleString()}</h3>
+                        <span className="badge positive">Registered</span>
+                    </div>
+                </div>
 
                 <div className="kpi-card glass-orange">
                     <div className="kpi-icon"><FaWallet /></div>
@@ -231,22 +231,22 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                     <div className="kpi-icon"><FaPiggyBank /></div>
                     <div className="kpi-info">
                         <small>Saved</small>
-                        <h3>₹{(saved/1000).toFixed(1)}k</h3>
+                        <h3>₹{(saved / 1000).toFixed(1)}k</h3>
                         <span className="sub-text">{Math.round((saved / (income || 1)) * 100)}% Rate</span>
                     </div>
                 </div>
-            
-            {!stats.hasInsurance && (
-    <div className="kpi-card glass-yellow">
-        <div className="kpi-icon"><FaRegLightbulb /></div>
-        <div className="kpi-info">
-            <small>Insurance</small>
-            <h3>Not Covered</h3>
-            <span className="badge warning">Risk ⚠️</span>
-        </div>
-    </div>
-)}
-</div>
+
+                {!stats.hasInsurance && (
+                    <div className="kpi-card glass-yellow">
+                        <div className="kpi-icon"><FaRegLightbulb /></div>
+                        <div className="kpi-info">
+                            <small>Insurance</small>
+                            <h3>Not Covered</h3>
+                            <span className="badge warning">Risk ⚠️</span>
+                        </div>
+                    </div>
+                )}
+            </div>
 
             <div className="charts-grid-main">
                 <div className="chart-card large">
@@ -255,7 +255,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                         <Line data={cashFlowData} options={lineOptions} />
                     </div>
                 </div>
-                
+
                 <div className="side-charts-col">
                     <div className="chart-card small">
                         <h4>Wallet (7 Days)</h4>
@@ -266,7 +266,7 @@ const Analytics = ({ viewMode, selectedMonth }) => {
                     <div className="chart-card small row-flex">
                         <div className="doughnut-wrapper">
                             <Doughnut data={distributionData} options={{ cutout: '70%', plugins: { legend: { display: false } } }} />
-                            <div className="doughnut-center"><span>Total</span><strong>₹{(income/1000).toFixed(0)}k</strong></div>
+                            <div className="doughnut-center"><span>Total</span><strong>₹{(income / 1000).toFixed(0)}k</strong></div>
                         </div>
                         <div className="legend-list">
                             <div className="legend-item"><span className="dot blue"></span> Fixed</div>

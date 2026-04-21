@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./RetirementForm.css";
 
-const RetirementForm = ({ onSubmit,onClose }) => {
+const RetirementForm = ({ onSubmit, onClose }) => {
     const [form, setForm] = useState({
         currentAge: 25,
         targetAge: 60,
@@ -23,7 +23,7 @@ const RetirementForm = ({ onSubmit,onClose }) => {
         <div className="ret-form-overlay">
             <div className="ret-form-card">
                 <button onClick={onClose} className="close-btn">✖</button>
-<h2 className="heading">AI Retirement Strategist</h2>
+                <h2 className="heading">AI Retirement Strategist</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Current Age</label>

@@ -19,7 +19,7 @@ const AdvisoryAgent = () => {
     const [editGoalData, setEditGoalData] = useState(null);
     const [reward, setReward] = useState(null);
     const openEditGoal = (goal) => {
-        setEditingGoal(null); // Close the "Add Money" modal if it's open
+        setEditingGoal(null); 
         setEditGoalData(goal);
         setView('editGoal');
     };

@@ -4,7 +4,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -17,14 +17,15 @@
     padding: 30px;
     border-radius: 16px;
     width: 350px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     animation: fadeIn 0.3s ease;
 }
 
 .heading {
     text-align: center;
     margin-bottom: 20px;
-    color: black; /* ✅ your requirement */
+    color: black;
+    /* ✅ your requirement */
 }
 
 .form-group {
@@ -61,16 +62,23 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .ret-form-card {
-    position: relative; /* ✅ required */
+    position: relative;
 }
 
 .close-btn {
-    position: absolute;  /* ✅ must */
+    position: absolute;
     top: 12px;
     right: 12px;
     padding-left: 300px;
