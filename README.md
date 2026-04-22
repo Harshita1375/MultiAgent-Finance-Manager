@@ -47,14 +47,14 @@ A comprehensive module that handles both **Long-term Security** and **Active Inv
 * **Safety-First Engine:** Suggests investments **only** if you have unallocated "Free Cash" (Money left after Needs + Savings).
 * **Defensive Strategy:** Filters for stable Bluechip stocks and ETFs (e.g., Nifty 50, Gold BeES) rather than risky speculative stocks.
 
-### 5. 📰 Market Intelligence Agent
+### 5. 📰 Market Intelligence Agent (For Real Time News Analysis)
 - Fetches real-time financial news (News API)
 - Uses **BART NLP model (Hugging Face)** for:
   - News summarization
   - Sentiment analysis
 - Provides context-aware financial insights
 
-### 6. 🎯  Goal Management System (NEW)
+### 6. 🎯  Goal Management System
 - Categorizes goals into:
   - 🟢 **Short-Term Goals** (0–1 year)
   - 🔵 **Long-Term Goals** (1–5 years)
@@ -173,7 +173,8 @@ MongoDB (Local or Atlas connection string)
 
 ### 2. Clone the Repository
 
-git clone [https://github.com/yourusername/multiagent-finance-manager.git](https://github.com/yourusername/multiagent-finance-manager.git)
+git clone [https://github.com/yourusername/multiagent-finance-manager.git](https://github.com/yourusername/multiagent-finance-manager.git) 
+<br>
 cd multiagent-finance-manager
 
 
@@ -228,10 +229,10 @@ Safety-First Algorithms: The trading engine is hard-coded to prioritize ETF and 
 
 ### 📄 Research Documents
 
-- 📘 [Literature Review](docs/FinSync_Literature_Review.pdf)  
+- 📘 [Literature Review](docs/FinSync_Literature Review.pdf)  
   Covers methodologies, existing systems, and research foundation of FinSync.
 
-- 📊 [Case Study](docs/FinSync_Case_Study.pdf)  
+- 📊 [Case Study](docs/FinSync_Case Study.pdf)  
   Explores real-world financial behavior and user understanding of financial planning.
 
 ---
@@ -271,7 +272,7 @@ You are free to:
 
 With proper attribution.
 
-See the `LICENSE` file for full details.
+See the [LICENSE](./LICENSE) file for full details.
 
 ---
 
