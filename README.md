@@ -1,10 +1,13 @@
 # 💰 MultiAgent Finance Manager
 
 A smart, AI-driven personal finance assistant that helps users manage monthly savings, analyze asset purchases, and receive safe, data-backed stock market trading suggestions.
+
 ---
 ## 🔒 Author & Source
 **Author:** Harshita Tiwary
+<br>
 **Project:** FinSync - MultiAgent Finance Manager
+<br>
 **Source:** https://github.com/Harshita1375/MultiAgent-Finance-Manager
 
 ## 🚀 Features
