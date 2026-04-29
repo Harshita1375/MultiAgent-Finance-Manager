@@ -2,6 +2,10 @@
 
 A smart, AI-driven personal finance assistant that helps users manage monthly savings, analyze asset purchases, and receive safe, data-backed stock market trading suggestions.
 ---
+## 🔒 Author & Source
+**Author:** Harshita Tiwary
+**Project:** FinSync - MultiAgent Finance Manager
+**Source:** https://github.com/Harshita1375/MultiAgent-Finance-Manager
 
 ## 🚀 Features
 
@@ -173,7 +177,7 @@ MongoDB (Local or Atlas connection string)
 
 ### 2. Clone the Repository
 
-git clone [https://github.com/yourusername/multiagent-finance-manager.git](https://github.com/yourusername/multiagent-finance-manager.git) 
+git clone [https://github.com/Harshita1375/MultiAgent-Finance-Manager.git](https://github.com/Harshita1375/MultiAgent-Finance-Manager.git) 
 <br>
 cd multiagent-finance-manager
 
@@ -292,3 +296,5 @@ If you found this project helpful:
 - 📢 Share it
 
 ---
+## Credits
+Created by Harshita Tiwary (2026)
